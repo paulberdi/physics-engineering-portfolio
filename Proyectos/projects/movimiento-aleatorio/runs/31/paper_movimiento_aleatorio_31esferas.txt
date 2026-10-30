@@ -1,0 +1,97 @@
+================================================================================
+ANÁLISIS EXPERIMENTAL DE MOVIMIENTO ALEATORIO
+Universidad Técnica Federico Santa María
+Física Experimental - FIS 200
+================================================================================
+
+Fecha: 2025-09-10
+Archivo de datos: 31esferas.xlsx
+Duración del experimento: 120.4 segundos
+Número de mediciones: 7142
+
+RESUMEN
+----------------------------------------
+Se analizó el movimiento aleatorio de una esfera en un recipiente vibrante
+utilizando análisis de video mediante software Tracker. Se determinó el
+régimen dinámico como 'Subdifusivo anómalo' con exponente de
+escalamiento α = 0.7999 ± 0.0051.
+
+1. INTRODUCCIÓN
+----------------------------------------
+El movimiento browniano describe el desplazamiento aleatorio de partículas
+microscópicas suspendidas en un fluido. En este experimento se simula este
+comportamiento mediante esferas en un recipiente vibrante.
+
+El desplazamiento cuadrático medio (MSD) se define como:
+⟨r²(t)⟩ = ⟨[x(t) − x(0)]² + [y(t) − y(0)]²⟩
+
+La evolución temporal sigue la ley de escala:
+⟨r²(t)⟩ = A·t^α
+
+donde α caracteriza el régimen dinámico:
+• α < 1: Subdifusivo anómalo
+• α = 1: Difusivo clásico (browniano)
+• α > 1: Superdifusivo
+
+2. METODOLOGÍA EXPERIMENTAL
+----------------------------------------
+• Se utilizó una esfera en recipiente vibrante
+• Grabación de video durante 120 segundos
+• Análisis de trayectoria con software Tracker
+• Calibración dimensional del sistema
+• Frecuencia de muestreo: 59.3 Hz
+
+3. RESULTADOS
+----------------------------------------
+3.1 Características del movimiento:
+• Desplazamiento total: 0.0434 m
+• Desplazamiento máximo: 0.0980 m
+• Distancia recorrida: 10.7471 m
+• Velocidad media X: -0.000338 m/s
+• Velocidad media Y: 0.000124 m/s
+
+3.2 Análisis de ley de escala:
+• Exponente α = 0.7999 ± 0.0051
+• Constante A = 3.97e-04 m²/s^α
+• Coeficiente de correlación R² = 0.9610
+• p-valor = 0.00e+00
+• Régimen identificado: Subdifusivo anómalo
+
+4. DISCUSIÓN
+----------------------------------------
+4.1 Comportamiento anómalo:
+El exponente α = 0.7999 indica desviación del
+comportamiento difusivo ideal. Posibles causas:
+• Restricciones geométricas del recipiente
+• Efectos de fricción o atrapamiento
+• Heterogeneidad en la vibración
+
+4.2 Incertidumbres experimentales:
+• Resolución espacial del video
+• Precisión del software de tracking
+• Efectos de bordes del recipiente
+• Variaciones en la amplitud de vibración
+
+5. CONCLUSIONES
+----------------------------------------
+1. Se identificó un régimen subdifusivo anómalo
+   con exponente de escalamiento α = 0.7999
+
+3. El análisis log-log permite discriminar efectivamente
+   entre diferentes regímenes de transporte
+
+4. Se observan desviaciones del comportamiento
+   browniano ideal que requieren mayor investigación
+
+REFERENCIAS
+----------------------------------------
+[1] Einstein, A. (1905). Über die von der molekularkinetischen Theorie
+    der Wärme geforderte Bewegung von in ruhenden Flüssigkeiten
+    suspendierten Teilchen. Ann. Phys. 17, 549-560.
+
+[2] Metzler, R., & Klafter, J. (2000). The random walk's guide to
+    anomalous diffusion. Physics Reports, 339(1), 1-77.
+
+[3] Guía de Laboratorio FIS 200 - Universidad Técnica Federico Santa María
+
+================================================================================

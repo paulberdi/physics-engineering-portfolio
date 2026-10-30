@@ -1,0 +1,7 @@
+name,config,angle_id,theta_deg,a_mean,m
+corrida angulo1 sin_veleta,sin_veleta,1,0.87,-0.016876970957714392,0.1803
+angulo1 con_veleta,con_veleta,1,0.873343629,0.06517053504091389,0.2359
+angulo2 sin_veleta,sin_veleta,2,1.16438804,-0.12424624681070925,0.1803
+angulo2 con_veleta,con_veleta,2,1.16438804,0.05111523516598688,0.2359
+angulo3 sin_veleta,sin_veleta,3,2.38594403,-0.39976302457628127,0.1803
+angulo3 con_veleta,con_veleta,3,2.38594403,-0.07515024472728193,0.2359

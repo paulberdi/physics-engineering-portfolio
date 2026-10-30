@@ -1,0 +1,129 @@
+======================================================================
+ANÁLISIS DE CAÍDA EN MEDIO VISCOSO - LEY DE STOKES
+======================================================================
+
+──────────────────────────────────────────────────────────────────────
+Procesando: esfera1_corrida_1 (esfera1)
+──────────────────────────────────────────────────────────────────────
+Puntos totales: 189
+Puntos para ajuste: 117
+Ventana temporal: [0.256, 2.180] s
+
+Parámetros del ajuste:
+  s₀ = -0.491380 ± 223288.957981 m
+  t₀ = 0.175203 ± 1077915.525418 s
+  v_terminal = 0.222761 ± 0.003624 m/s
+  τ = 0.006087 ± 75657.276185 s
+  R² = 0.972557
+
+Viscosidad calculada:
+  η (desde v_t) = 0.5814 Pa·s
+  η (desde τ) = 2.5792 Pa·s
+  η promedio = 1.5803 Pa·s
+  Compatibilidad: 126.4% diferencia
+  ⚠️  ADVERTENCIA: Gran diferencia entre métodos (>20%)
+
+──────────────────────────────────────────────────────────────────────
+Procesando: corrida1_esfera2 (esfera2)
+──────────────────────────────────────────────────────────────────────
+Puntos totales: 115
+Puntos para ajuste: 85
+Ventana temporal: [0.512, 1.900] s
+
+Parámetros del ajuste:
+  s₀ = -0.497417 ± 399803.806812 m
+  t₀ = 0.412001 ± 1292516.960218 s
+  v_terminal = 0.330595 ± 0.006308 m/s
+  τ = 0.006938 ± 83634.779902 s
+  R² = 0.972536
+
+Viscosidad calculada:
+  η (desde v_t) = 0.6964 Pa·s
+  η (desde τ) = 4.0231 Pa·s
+  η promedio = 2.3598 Pa·s
+  Compatibilidad: 141.0% diferencia
+  ⚠️  ADVERTENCIA: Gran diferencia entre métodos (>20%)
+
+──────────────────────────────────────────────────────────────────────
+Procesando: corrida1_esfera3 (esfera3)
+──────────────────────────────────────────────────────────────────────
+Puntos totales: 100
+Puntos para ajuste: 66
+Ventana temporal: [0.912, 2.000] s
+
+Parámetros del ajuste:
+  s₀ = -0.528724 ± 5147049.470953 m
+  t₀ = 0.815765 ± 1391896.294396 s
+  v_terminal = 0.462219 ± 0.014544 m/s
+  τ = 0.001031 ± 11161494.188612 s
+  R² = 0.975572
+
+Viscosidad calculada:
+  η (desde v_t) = 0.7783 Pa·s
+  η (desde τ) = 42.2996 Pa·s
+  η promedio = 21.5390 Pa·s
+  Compatibilidad: 192.8% diferencia
+  ⚠️  ADVERTENCIA: Gran diferencia entre métodos (>20%)
+
+======================================================================
+RESUMEN POR CORRIDA
+======================================================================
+
+Corrida              Esfera     r(mm)    v_t(m/s)     τ(s)       η(Pa·s)    R²
+──────────────────────────────────────────────────────────────────────
+esfera1_corrida_1    esfera1    3.00     0.222761     0.006087   1.5803     0.9726
+corrida1_esfera2     esfera2    4.00     0.330595     0.006938   2.3598     0.9725
+corrida1_esfera3     esfera3    5.00     0.462219     0.001031   21.5390    0.9756
+
+======================================================================
+RESUMEN POR ESFERA (PROMEDIOS)
+======================================================================
+
+Esfera     n     r(mm)    v_t(m/s)        τ(s)            η(Pa·s)
+──────────────────────────────────────────────────────────────────────
+esfera1    1     3.00     0.222761        0.006087        1.5803
+esfera2    1     4.00     0.330595        0.006938        2.3598
+esfera3    1     5.00     0.462219        0.001031        21.5390
+
+======================================================================
+ANÁLISIS Y VALIDACIÓN
+======================================================================
+
+1. Verificación de Ley de Stokes (v_t ∝ r²):
+   esfera1 → esfera2: r²_ratio = 1.778, v_t_ratio = 1.484 (diferencia: 16.5%)
+   esfera2 → esfera3: r²_ratio = 1.562, v_t_ratio = 1.398 (diferencia: 10.5%)
+
+2. Viscosidad promedio global:
+   η = 8.4930 ± 11.3048 Pa·s
+   (Glicerina pura a 20°C: ~1.4 Pa·s)
+
+3. Número de Reynolds (verificar régimen laminar, Re << 1):
+   esfera1: Re = 0.1962 ✓ (laminar)
+   esfera2: Re = 0.3883 ✓ (laminar)
+   esfera3: Re = 0.6787 ✓ (laminar)
+
+======================================================================
+GENERANDO GRÁFICOS...
+======================================================================
+✓ Gráfico guardado: analisis_stokes_completo.png
+✓ Gráfico guardado: comparacion_esferas.png
+
+======================================================================
+ANÁLISIS COMPLETADO
+======================================================================
+
+Archivos generados:
+  • exp5_corridas_stokes.csv - Resultados detallados por corrida
+  • exp5_resumen_por_esfera.csv - Promedios por esfera
+  • analisis_stokes_completo.png - Gráficos de ajuste y análisis
+  • comparacion_esferas.png - Comparación entre esferas
+
+📋 RECOMENDACIONES:
+  1. Verifica que R² > 0.95 en todos los ajustes
+  2. Comprueba que Re << 1 para validar régimen laminar
+  3. La diferencia entre η_vt y η_τ debe ser < 20%
+  4. MIDE los radios reales con calibre y actualiza el código
+  5. Verifica la densidad del fluido con densitómetro
+  6. Si hay errores grandes, ajusta las ventanas fit_window
+
+✓ Proceso finalizado exitosamente

@@ -1,9 +1,9 @@
-name: Import actual ICF130 project files
+name: Import complete ICF130 project files
 
 on:
   push:
     paths:
-      - '.import/icf130/READY'
+      - '.github/workflows/import-icf130-actual-files.yml'
 
 permissions:
   contents: write
@@ -17,44 +17,61 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Reassemble and extract original project files
+      - name: Download exact OneDrive export
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/icf130-import
-          cat .import/icf130/part*.txt | base64 --decode > /tmp/icf130-import/project.tar.gz
-          mkdir -p llenado-transiente-deposito-gas-real
-          tar -xzf /tmp/icf130-import/project.tar.gz -C llenado-transiente-deposito-gas-real
+          curl --fail --location --retry 3 --retry-delay 2 \
+            'https://sdmntprbrazilsouth.oaiusercontent.com/files/00000000-ae18-820e-997b-f58a3930a2b6/raw?se=2026-10-30T14%3A46%3A39Z&sp=r&sv=2026-02-06&sr=b&scid=10715e24-1a77-5fa2-aa9a-2d7c5d811ef9&skoid=86ad43b0-1afa-4d46-a6d6-9e67f7cdc5bc&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-30T12%3A15%3A13Z&ske=2026-10-31T12%3A15%3A13Z&sks=b&skv=2026-02-06&sig=ab/fuwMIBU4SnnAlq4bHaWw7oV27GeFwt4ujqCY/3Kk%3D' \
+            --output /tmp/icf130_full_actual.tar.gz
+          echo 'be60552d2611b89b7be95adcb5df20a129ceeb483077ce9b9e4253987f35ed28  /tmp/icf130_full_actual.tar.gz' | sha256sum --check --strict
 
-      - name: Verify imported source files
+      - name: Extract complete project
         shell: bash
         run: |
           set -euo pipefail
-          test -f llenado-transiente-deposito-gas-real/Version1/Avance1.py
-          test -f llenado-transiente-deposito-gas-real/Version1/ideal_vs_vdw_reporte.txt
-          test -f llenado-transiente-deposito-gas-real/Version2/Avance2.py
-          test -f llenado-transiente-deposito-gas-real/Version2/flujovariable_reporte.txt
-          test -f llenado-transiente-deposito-gas-real/Version2/flujovariable_datos.csv
-          test -f llenado-transiente-deposito-gas-real/Version3/Version3.py
-          test -f llenado-transiente-deposito-gas-real/Version3/V3_reporte.txt
-          test -f llenado-transiente-deposito-gas-real/Version3/V3_datos.csv
+          rm -rf llenado-transiente-deposito-gas-real/Version1 \
+                 llenado-transiente-deposito-gas-real/Version2 \
+                 llenado-transiente-deposito-gas-real/Version3
+          tar -xzf /tmp/icf130_full_actual.tar.gz -C llenado-transiente-deposito-gas-real
+
+      - name: Verify all 16 original files
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            'llenado-transiente-deposito-gas-real/Avance1+v3.2.pdf'
+            'llenado-transiente-deposito-gas-real/Version1/Avance1.py'
+            'llenado-transiente-deposito-gas-real/Version1/ideal_vs_vdw_reporte.txt'
+            'llenado-transiente-deposito-gas-real/Version1/ideal_vs_vdw_sim.mp4'
+            'llenado-transiente-deposito-gas-real/Version1/ideal_vs_vdw_sim_final.png'
+            'llenado-transiente-deposito-gas-real/Version2/Avance2.py'
+            'llenado-transiente-deposito-gas-real/Version2/flujovariable_datos.csv'
+            'llenado-transiente-deposito-gas-real/Version2/flujovariable_foto_sim.png'
+            'llenado-transiente-deposito-gas-real/Version2/flujovariable_reporte.txt'
+            'llenado-transiente-deposito-gas-real/Version2/flujovariable_video_sim.mp4'
+            'llenado-transiente-deposito-gas-real/Version3/Version3.py'
+            'llenado-transiente-deposito-gas-real/Version3/V3_datos.csv'
+            'llenado-transiente-deposito-gas-real/Version3/V3_reporte.txt'
+            'llenado-transiente-deposito-gas-real/Version3/V3_comparacion_V2.png'
+            'llenado-transiente-deposito-gas-real/Version3/V3_resultado_final.png'
+            'llenado-transiente-deposito-gas-real/Version3/V3_simulacion.mp4'
+          )
+          for f in "${files[@]}"; do test -f "$f"; done
           python -m py_compile \
             llenado-transiente-deposito-gas-real/Version1/Avance1.py \
             llenado-transiente-deposito-gas-real/Version2/Avance2.py \
             llenado-transiente-deposito-gas-real/Version3/Version3.py
 
-      - name: Commit imported files
+      - name: Commit exact project files
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add llenado-transiente-deposito-gas-real/Version1 \
-                  llenado-transiente-deposito-gas-real/Version2 \
-                  llenado-transiente-deposito-gas-real/Version3
-          if git diff --cached --quiet; then
-            echo 'No changes to commit.'
-          else
-            git commit -m 'Import actual ICF130 project files from OneDrive'
-            git push
-          fi
+          git add -f llenado-transiente-deposito-gas-real/Avance1+v3.2.pdf \
+                     llenado-transiente-deposito-gas-real/Version1 \
+                     llenado-transiente-deposito-gas-real/Version2 \
+                     llenado-transiente-deposito-gas-real/Version3
+          git commit -m 'Add complete real ICF130 semester project files'
+          git push

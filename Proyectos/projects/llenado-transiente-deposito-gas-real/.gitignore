@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.DS_Store
+Thumbs.db
+
+# Resultados generados automáticamente por las simulaciones
+*.mp4
+*.gif
+*_datos.csv
+*_sim.png
+*_sim_final.png

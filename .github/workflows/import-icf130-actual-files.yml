@@ -1,0 +1,60 @@
+name: Import actual ICF130 project files
+
+on:
+  push:
+    paths:
+      - '.import/icf130/READY'
+
+permissions:
+  contents: write
+
+jobs:
+  import-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reassemble and extract original project files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/icf130-import
+          cat .import/icf130/part*.txt | base64 --decode > /tmp/icf130-import/project.tar.gz
+          mkdir -p llenado-transiente-deposito-gas-real
+          tar -xzf /tmp/icf130-import/project.tar.gz -C llenado-transiente-deposito-gas-real
+
+      - name: Verify imported source files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f llenado-transiente-deposito-gas-real/Version1/Avance1.py
+          test -f llenado-transiente-deposito-gas-real/Version1/ideal_vs_vdw_reporte.txt
+          test -f llenado-transiente-deposito-gas-real/Version2/Avance2.py
+          test -f llenado-transiente-deposito-gas-real/Version2/flujovariable_reporte.txt
+          test -f llenado-transiente-deposito-gas-real/Version2/flujovariable_datos.csv
+          test -f llenado-transiente-deposito-gas-real/Version3/Version3.py
+          test -f llenado-transiente-deposito-gas-real/Version3/V3_reporte.txt
+          test -f llenado-transiente-deposito-gas-real/Version3/V3_datos.csv
+          python -m py_compile \
+            llenado-transiente-deposito-gas-real/Version1/Avance1.py \
+            llenado-transiente-deposito-gas-real/Version2/Avance2.py \
+            llenado-transiente-deposito-gas-real/Version3/Version3.py
+
+      - name: Commit imported files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add llenado-transiente-deposito-gas-real/Version1 \
+                  llenado-transiente-deposito-gas-real/Version2 \
+                  llenado-transiente-deposito-gas-real/Version3
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+          else
+            git commit -m 'Import actual ICF130 project files from OneDrive'
+            git push
+          fi

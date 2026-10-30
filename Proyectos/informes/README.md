@@ -1,8 +1,8 @@
-# Experimental Reports
+# Informes finales de laboratorio
 
-This directory contains the original academic laboratory reports from experimental physics coursework.
+Esta carpeta contiene los entregables finales en PDF de las experiencias de Física Experimental.
 
-## Reports
+## Informes
 
 - [Análisis de un movimiento en caída libre](./analisis-de-un-movimiento-en-caida-libre.pdf)
 - [Lanzamiento parabólico: contrastes entre teoría, medición experimental y modelado digital](./lanzamiento-parabolico-contrastes-entre-teoria-medicion-experimental-y-modelado-digital.pdf)
@@ -11,4 +11,6 @@ This directory contains the original academic laboratory reports from experiment
 - [Análisis experimental del comportamiento dinámico de sistemas oscilatorios amortiguados y acoplados](./analisis-experimental-del-comportamiento-dinamico-de-sistemas-oscilatorios-amortiguados-y-acoplados.pdf)
 - [Calibración de sensores de temperatura mediante PT100 y sistema manométrico de gas](./calibracion-de-sensores-de-temperatura.pdf)
 
-The PDFs in this directory are final academic reports. Supporting data, code, Tracker files and figures are organized under [`projects/`](../projects/). **Caída libre en medios viscosos is not listed here because its final deliverable is a poster rather than a paper.**
+El material experimental y de análisis de cada experiencia está organizado en [`../laboratorios/`](../laboratorios/).
+
+**Caída libre en medios viscosos** no aparece en esta lista porque su entregable final es un póster y se conserva junto al material de esa experiencia.

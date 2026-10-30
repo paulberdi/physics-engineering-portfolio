@@ -1,0 +1,668 @@
+ICF130 — PROYECTO COMPUTACIONAL
+VERSIÓN 1 — LLENADO TRANSIENTE DE UN DEPÓSITO
+COMPARACIÓN: GAS IDEAL VS VAN DER WAALS
+======================================================================
+
+1. FENÓMENO FÍSICO Y OBJETIVO
+----------------------------------------------------------------------
+
+Se estudia el llenado transiente de un depósito rígido con nitrógeno.
+El depósito contiene inicialmente gas y recibe una corriente de entrada.
+
+Durante el llenado se acumulan masa y energía interna. Como consecuencia,
+la temperatura promedio y la presión cambian con el tiempo.
+
+El objetivo es comparar las predicciones de dos modelos termodinámicos:
+
+    1) Gas ideal.
+    2) Gas descrito mediante la ecuación de Van der Waals.
+
+Ambos emplean balances de masa y energía para un volumen de control
+abierto, pero difieren en sus relaciones de presión, energía interna
+y entalpía de entrada.
+
+El proceso es adiabático: no existe transferencia de calor a través
+de la frontera del depósito. Esto no implica temperatura constante.
+
+La corriente entrante transporta entalpía. Esta incluye la energía
+interna del gas y el trabajo de flujo necesario para introducirlo.
+
+
+2. CONDICIONES DEL PROBLEMA
+----------------------------------------------------------------------
+
+Gas: nitrógeno.
+
+Volumen del depósito:
+    V = 0.05 m³ = 50 L
+
+Estado inicial:
+    P0 = 100000 Pa = 1 bar
+    T0 = 300 K = 26.85 °C
+
+Condiciones del suministro:
+    P_in = 20000000 Pa = 200 bar
+    T_in = 300 K = 26.85 °C
+
+Caudal másico impuesto:
+    mdot = 0.02 kg/s
+
+Presión objetivo:
+    P_target = 10000000 Pa
+             = 100 bar
+
+Las presiones se interpretan como absolutas en las ecuaciones de estado.
+
+
+3. PROPIEDADES Y PARÁMETROS UTILIZADOS
+----------------------------------------------------------------------
+
+Masa molar:
+    M = 0.0280134 kg/mol
+
+Constante universal:
+    R_u = 8.314462618 J/(mol K)
+
+Constante específica:
+    R = R_u/M = 296.803052039 J/(kg K)
+
+Referencia calorífica ideal:
+    cp = 1039 J/(kg K)
+    cv = cp - R = 742.196947961 J/(kg K)
+    gamma = cp/cv = 1.39989796894
+
+Parámetros críticos usados:
+    Tc = 126.19 K
+    Pc = 33.534 * 101325 = 3397832.55 Pa
+
+Parámetros de Van der Waals:
+
+    a = (27/64) * R² * Tc² / Pc
+      = 174.16802353 Pa·m⁶/kg²
+
+    b = R * Tc / (8 * Pc)
+      = 0.00137784810558 m³/kg
+
+El volumen específico v se expresa en m³/kg. Por ello, a y b son
+parámetros específicos por unidad de masa, no parámetros molares.
+
+
+4. HIPÓTESIS Y SIMPLIFICACIONES
+----------------------------------------------------------------------
+
+4.1. Volumen de control
+
+El depósito se trata como un volumen de control fijo y rígido.
+Existe una entrada y ninguna salida durante la etapa integrada.
+
+4.2. Trabajo y calor
+
+Se supone:
+    - Transferencia de calor nula: Qdot = 0.
+    - Trabajo de eje nulo.
+    - Trabajo de frontera por variación de volumen nulo.
+    - Energías cinética y potencial despreciables.
+
+El trabajo de flujo de entrada ya está incluido en h_in.
+
+4.3. Modelo concentrado 0D
+
+Se supone que las propiedades son uniformes dentro del depósito.
+En cada instante se calcula una sola temperatura promedio T(t),
+una sola presión P(t) y una masa total m(t).
+
+No se resuelven gradientes espaciales, estratificación, turbulencia,
+campos de velocidad ni geometría física del chorro.
+
+4.4. Suministro y caudal
+
+P_in, T_in y mdot se mantienen constantes.
+
+No se modelan:
+    - Agotamiento o enfriamiento del suministro.
+    - Dinámica de una válvula.
+    - Pérdidas de presión en tuberías.
+    - Variación del caudal con la diferencia de presión.
+    - Flujo compresible a través de una restricción.
+
+P_in se usa para determinar el estado de entrada. No existe una ley
+dinámica que calcule mdot a partir de P_in y la presión del depósito.
+
+4.5. Propiedades caloríficas
+
+Se usa cv constante.
+
+cp = cv + R se utiliza como referencia calorífica del modelo ideal.
+En Van der Waals no se impone ese cp como capacidad calorífica real:
+la entalpía de entrada se calcula mediante h = u + Pv.
+
+4.6. Pared y fases
+
+No se calcula temperatura de pared ni su capacidad térmica.
+No se modelan cambios de fase o equilibrio líquido-vapor.
+
+
+5. BALANCE DE MASA
+----------------------------------------------------------------------
+
+Balance general:
+
+    dm/dt = mdot_in - mdot_out
+
+Como no hay salida y el caudal de entrada es constante:
+
+    dm/dt = mdot
+
+Mientras el llenado permanece activo:
+
+    m(t) = m0 + mdot*t
+
+La pendiente de la curva de masa es mdot. Las masas iniciales de los
+dos modelos pueden diferir porque cada uno obtiene la densidad inicial
+con su propia ecuación de estado.
+
+
+6. BALANCE DE ENERGÍA
+----------------------------------------------------------------------
+
+Para las hipótesis adoptadas:
+
+    dU/dt = mdot*h_in
+
+donde:
+
+    U = m*u
+
+La entalpía de entrada es constante para cada modelo. Por tanto:
+
+    U(t) - U0 = mdot*h_in*t
+
+y, usando el balance de masa:
+
+    U(t) - U0 = (m(t) - m0)*h_in
+
+Esta última igualdad se usa para verificar conservación de energía.
+
+
+7. MODELO DE GAS IDEAL
+----------------------------------------------------------------------
+
+Ecuación de estado:
+
+    P*v = R*T
+    v = V/m
+    P = m*R*T/V
+
+Energía interna específica:
+
+    u = cv*T
+
+Entalpía específica de entrada:
+
+    h_in_ideal = cp*T_in
+               = 311700 J/kg
+
+Volumen específico de entrada:
+
+    v_in_ideal = R*T_in/P_in
+               = 0.00445204578059 m³/kg
+
+Masa inicial:
+
+    m0_ideal = P0*V/(R*T0)
+             = 0.0561539598469 kg
+
+Expandiendo el balance de energía:
+
+    cv*(m*dT/dt + T*dm/dt) = mdot*cp*T_in
+
+Con dm/dt = mdot:
+
+    dT/dt = (mdot/m)*(gamma*T_in - T)
+
+Solución analítica usada para validar:
+
+    T(t) = gamma*T_in
+           + (m0_ideal/m(t))*(T0 - gamma*T_in)
+
+Si el llenado ideal continuara indefinidamente con estas hipótesis,
+la temperatura tendería formalmente a:
+
+    T_limite = gamma*T_in = 419.969390681 K
+
+Este límite no implica que se alcance exactamente antes de llegar
+a la presión objetivo.
+
+
+8. MODELO DE VAN DER WAALS
+----------------------------------------------------------------------
+
+Ecuación de estado:
+
+    P = R*T/(v-b) - a/v²
+
+Dominio admitido:
+
+    v > b
+
+El parámetro b representa el efecto de volumen excluido y el término
+a/v² introduce una corrección asociada a atracciones intermoleculares.
+
+Relación calorífica:
+
+    du = cv*dT + [T*(dP/dT)_v - P]*dv
+
+Para Van der Waals:
+
+    (dP/dT)_v = R/(v-b)
+
+    T*(dP/dT)_v - P = a/v²
+
+Por integración con cv constante:
+
+    u(T,v) = cv*T - a/v
+
+Se adopta una referencia energética compatible con el modelo ideal.
+
+La energía interna total es:
+
+    U = m*cv*T - a*m²/V
+
+Estado inicial:
+
+    v0_vdw = 0.889832723029 m³/kg
+    m0_vdw = V/v0_vdw = 0.0561903363475 kg
+
+El volumen específico inicial se determina resolviendo:
+
+    P_vdw(T0,v0_vdw) = P0
+
+Estado de entrada:
+
+    v_in_vdw = 0.00448467285618 m³/kg
+
+    u_in_vdw = cv*T_in - a/v_in_vdw
+             = 183822.801539 J/kg
+
+    h_in_vdw = u_in_vdw + P_in*v_in_vdw
+             = 273516.258662 J/kg
+
+No se sustituye h_in_vdw por cp*T_in.
+
+Como v = V/m y V es constante:
+
+    dv/dt = -(v/m)*mdot
+
+La ecuación diferencial implementada es:
+
+    dT/dt = mdot/(m*cv)
+            * [h_in_vdw - u + v*(T*(dP/dT)_v - P)]
+
+Para estas relaciones resulta equivalente a:
+
+    dT/dt = mdot/(m*cv)
+            * [h_in_vdw - cv*T + 2*a/v]
+
+
+9. DIFERENCIAS ENTRE LOS MODELOS
+----------------------------------------------------------------------
+
+Los dos modelos usan los mismos valores de V, P0, T0, P_in, T_in,
+mdot y presión objetivo.
+
+Sin embargo, cambian:
+    - La ecuación de estado.
+    - La masa inicial asociada a P0, T0 y V.
+    - El volumen específico del suministro.
+    - La energía interna específica.
+    - La entalpía de entrada.
+    - La evolución de temperatura y presión.
+    - La masa y el tiempo necesarios para alcanzar el objetivo.
+
+No toda diferencia puede atribuirse únicamente a la ecuación de presión:
+también cambia el cierre energético.
+
+Factor de compresibilidad:
+
+    Z = P*v/(R*T)
+
+Para el gas ideal:
+
+    Z = 1
+
+Para Van der Waals:
+
+    Z = v/(v-b) - a/(R*T*v)
+
+Z expresa desviación respecto a la relación ideal. No cuantifica por
+sí solo el error frente a datos experimentales de nitrógeno.
+
+Van der Waals es una aproximación de gas real, no una referencia exacta.
+
+
+10. MÉTODO NUMÉRICO
+----------------------------------------------------------------------
+
+Se integran dos sistemas independientes con variables:
+
+    y = [m, T]
+
+Se utiliza scipy.integrate.solve_ivp con:
+
+    Método: RK45 adaptativo
+    Intervalo máximo: 0 a 1000 s
+    rtol: 1e-9
+    atol: 1e-11
+    max_step: 0.25 s
+    dense_output: True
+
+La salida densa permite evaluar la solución en los tiempos requeridos
+por la animación sin imponer esos tiempos como pasos del integrador.
+
+Los volúmenes específicos de Van der Waals se obtienen con brentq:
+
+    Residuo: P_vdw(T,v) - P
+    v_min = b*(1 + 1e-10)
+    v_max = max(100*R*T/P, 1e4*b)
+
+El límite superior se duplica mientras su residuo sea positivo.
+
+Tolerancias de brentq:
+
+    xtol = 1e-12
+    rtol = 1e-12
+
+El control v>b evita evaluar el estado fuera del dominio admitido.
+No constituye una verificación completa de estabilidad termodinámica
+ni una selección de fases para otros parámetros.
+
+Las tolerancias numéricas no representan incertidumbre física.
+
+
+11. DETENCIÓN Y RELOJ COMÚN
+----------------------------------------------------------------------
+
+Cada modelo tiene su propio evento:
+
+    P(t) - P_target = 0
+
+El evento es terminal y solo detecta cruces crecientes:
+
+    terminal = True
+    direction = 1
+
+Si no se alcanza el objetivo dentro del intervalo, el programa genera
+un RuntimeError.
+
+Para mostrar ambos resultados se usa un reloj común hasta:
+
+    tf_global = max(tf_ideal, tf_vdw)
+
+La evaluación de cada solución se limita mediante:
+
+    time_I = minimum(time, tf_ideal)
+    time_V = minimum(time, tf_vdw)
+
+Cuando un modelo llega primero al objetivo, su estado final se repite
+mientras el otro continúa.
+
+
+12. EXPLICACIÓN DE LA RECTA HORIZONTAL FINAL
+----------------------------------------------------------------------
+
+La meseta exacta posterior al evento aparece porque el programa congela
+deliberadamente masa, temperatura, presión y Z del modelo detenido.
+
+No representa un llenado que sigue recibiendo masa con todas esas
+variables constantes.
+
+Tampoco se integra explícitamente una etapa posterior al cierre de una
+válvula ni una relajación térmica posterior.
+
+Es necesario distinguir dos efectos:
+
+    a) Antes del evento:
+       La temperatura ideal se aproxima progresivamente a gamma*T_in.
+
+    b) Después del evento:
+       Se repite exactamente el último estado por el uso de minimum.
+
+Por ello, la línea constante final no debe interpretarse solamente
+como una asíntota física de temperatura.
+
+
+13. VALIDACIONES IMPLEMENTADAS
+----------------------------------------------------------------------
+
+13.1. Solución analítica ideal
+
+Se compara TI con:
+
+    T_analitica = gamma*T_in
+                  + (m0_ideal/mI)*(T0 - gamma*T_in)
+
+Error máximo absoluto:
+
+    max(|TI - T_analitica|) = 6.886872e-07 K
+
+13.2. Conservación de energía
+
+Se calcula para cada modelo:
+
+    residuo = U - U0 - (m-m0)*h_in
+
+El indicador reportado es:
+
+    max(|residuo| / max(|U|, 1.0))
+
+U se evalúa numéricamente en joules; el piso del denominador es 1 J.
+
+Resultados:
+
+    Error energético ideal = 2.093639e-09
+    Error energético VdW   = 2.082871e-09
+
+Los indicadores se evalúan sobre las muestras de la animación, incluidos
+los estados finales repetidos. No comprueban todos los puntos del
+continuo temporal.
+
+El programa reporta estos errores sin imponer un umbral automático
+de aceptación.
+
+Son verificaciones de coherencia numérica y de balances. No sustituyen
+una validación experimental ni un estudio de convergencia.
+
+13.3. Diagnósticos adicionales incluidos en este TXT
+
+Máximo residuo de masa:
+
+    Ideal = 6.306067e-14 kg
+    VdW   = 7.016610e-14 kg
+
+Desviación de presión final respecto al objetivo:
+
+    Ideal = +0.000000e+00 Pa
+    VdW   = +0.000000e+00 Pa
+
+Margen mínimo de dominio en las muestras VdW:
+
+    min(v-b) = 1.018699e-02 m³/kg
+
+Estado del integrador ideal:
+
+    success = True
+    message = A termination event occurred.
+
+Estado del integrador VdW:
+
+    success = True
+    message = A termination event occurred.
+
+
+14. RESULTADOS DE ESTA EJECUCIÓN
+----------------------------------------------------------------------
+
+GAS IDEAL
+
+    Tiempo final       = 198.558829 s
+    Temperatura final  = 418.296631 K
+                       = 145.146631 °C
+    Presión final      = 100 bar
+    Masa final         = 4.02733054 kg
+    Z final            = 1
+
+VAN DER WAALS
+
+    Tiempo final       = 213.362944 s
+    Temperatura final  = 387.919777 K
+                       = 114.769777 °C
+    Presión final      = 100 bar
+    Masa final         = 4.32344921 kg
+    Z final            = 1.0044524
+
+DIFERENCIAS: VAN DER WAALS MENOS IDEAL
+
+    Delta tiempo       = +14.804115 s
+    Delta temperatura  = -30.3768544 K
+    Delta masa         = +0.296118676 kg
+
+Estas diferencias comparan los estados al alcanzar la misma presión
+objetivo, aunque ocurran en tiempos distintos.
+
+
+15. INTERPRETACIÓN DE LOS RESULTADOS
+----------------------------------------------------------------------
+
+La masa aumenta linealmente durante la etapa de llenado activo porque
+el caudal está impuesto como constante.
+
+La evolución de temperatura resulta del balance de energía y del modelo
+de propiedades. El aislamiento térmico no impide el calentamiento.
+
+La presión depende simultáneamente de la masa, temperatura y ecuación
+de estado. La curva de presión no debe interpretarse solo a partir
+de la curva de temperatura.
+
+Para comparar los dos modelos en un mismo tiempo, debe comprobarse si
+alguno ya alcanzó su evento y está congelado en la representación.
+
+La comparación final es a igual presión objetivo; no corresponde
+necesariamente a igual tiempo físico.
+
+
+16. MAPA TÉRMICO 2D: CONSTRUCCIÓN Y LIMITACIONES
+----------------------------------------------------------------------
+
+El modelo termodinámico es 0D. El mapa 2D es una representación
+ilustrativa y no calcula un campo físico T(x,y,t).
+
+La malla visual tiene:
+
+    150 columnas
+    80 filas
+
+El campo parte de T0 expresada en °C.
+
+Para cada cuadro se aplican cinco actualizaciones visuales con:
+
+    Difusión visual: r = 0.075
+    Advección visual: adv = 0.045
+    Relajación hacia la T promedio: 0.055
+
+Se usan dos distribuciones gaussianas para representar entrada y pluma.
+
+El objetivo local añade contribuciones con pesos 0.20 y 0.07 respecto
+al calentamiento positivo sobre T0.
+
+También se aplican relajaciones locales con pesos 0.10 y 0.03.
+
+La posición vertical de la entrada oscila según el índice del cuadro.
+Los bordes copian sus celdas vecinas como aislamiento visual.
+
+Estas operaciones no tienen asociados:
+    - Tamaños físicos de celda.
+    - Un paso temporal físico de transporte.
+    - Una difusividad térmica real.
+    - Una velocidad física del gas.
+
+Por ello, no constituyen una solución física de transporte de calor
+o dinámica de fluidos computacional.
+
+La media espacial del campo no está obligada a ser exactamente T(t).
+Puede presentar retraso o sobretemperaturas artificiales.
+
+El campo puede seguir cambiando después de congelarse la temperatura
+promedio, porque sus operaciones visuales siguen ejecutándose.
+
+Cambiar N_FRAMES puede modificar el aspecto del mapa.
+
+Los dos mapas comparten escala de colores, pero sus valores locales
+no predicen temperaturas de pared, puntos calientes reales, flujos
+de calor ni tiempos físicos de mezcla.
+
+El mapa no retroalimenta las ecuaciones diferenciales: no modifica
+masa, temperatura promedio, presión ni energía interna del modelo 0D.
+
+
+17. ALCANCE DE ESTA VERSIÓN 1
+----------------------------------------------------------------------
+
+Esta versión estudia el llenado transiente adiabático de un depósito
+rígido mediante balances concentrados de masa y energía.
+
+Permite:
+    - Comparar gas ideal y Van der Waals.
+    - Analizar T(t), P(t), m(t) y Z(t).
+    - Comparar tiempos y estados a igual presión objetivo.
+    - Verificar la solución ideal contra una expresión analítica.
+    - Comprobar el cierre del balance de energía.
+    - Mostrar una animación ilustrativa del proceso.
+
+Quedan fuera:
+    - Transferencia de calor con pared y ambiente.
+    - Capacidad térmica de la pared.
+    - Propiedades caloríficas variables.
+    - Dinámica de válvulas y suministro.
+    - Resolución espacial real y CFD.
+    - Cambios de fase.
+    - Validación experimental.
+
+Van der Waals no se adopta como descripción exacta del nitrógeno.
+El programa tiene alcance didáctico y de comparación de modelos;
+no constituye una certificación de diseño de equipos a alta presión.
+
+Una versión posterior puede incorporar pared, ambiente, una ley de
+caudal y propiedades más precisas, verificando nuevamente balances
+y dominio de validez.
+
+
+18. ARCHIVOS Y CONFIGURACIÓN DE SALIDA
+----------------------------------------------------------------------
+
+Animación:
+
+    N_FRAMES = 240
+    FPS = 30
+
+Los FPS determinan la reproducción, no el paso del integrador.
+
+Opciones:
+
+    SAVE_MP4 = True
+    SAVE_GIF = False
+    SAVE_STATIC_PNG = True
+
+El TXT se genera antes del mapa térmico y de las exportaciones.
+Su generación no requiere FFmpeg.
+
+Se guarda junto al script. En un notebook sin __file__, se guarda
+en la carpeta de trabajo.
+
+El archivo se reemplaza al ejecutar de nuevo el programa.
+
+Los parámetros y resultados numéricos de este documento proceden
+directamente de las variables y soluciones de esta ejecución.
+
+======================================================================
+FIN DEL INFORME — VERSIÓN 1
+======================================================================

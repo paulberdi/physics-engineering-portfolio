@@ -1,0 +1,885 @@
+ICF130 — PROYECTO COMPUTACIONAL
+VERSIÓN 2 — LLENADO TRANSIENTE CON CAUDAL VARIABLE
+GAS IDEAL VS VAN DER WAALS
+======================================================================
+
+1. FENÓMENO FÍSICO Y OBJETIVO
+----------------------------------------------------------------------
+
+Se estudia el llenado transiente de un depósito rígido inicialmente
+presurizado con nitrógeno.
+
+Entran masa y energía, aumentando la masa almacenada y modificándose
+la temperatura promedio y la presión.
+
+Se comparan dos cierres termodinámicos:
+
+    1) Gas ideal.
+    2) Van der Waals.
+
+El cambio principal respecto de la Versión 1 es que el caudal másico
+ya no se impone constante durante todo el llenado.
+
+Ahora se calcula mediante una ley de flujo compresible a través de un
+orificio, distinguiendo flujo estrangulado y subsónico.
+
+Esta versión continúa siendo adiabática y concentrada, de tipo 0D.
+No incorpora transferencia de calor al ambiente.
+
+
+2. CONDICIONES Y PARÁMETROS DEL PROBLEMA
+----------------------------------------------------------------------
+
+Gas: nitrógeno.
+
+Volumen:
+    V = 0.05 m³ = 50 L
+
+Estado inicial:
+    P0 = 100000 Pa = 1 bar
+    T0 = 300 K
+
+Suministro:
+    P_supply = 20000000 Pa
+             = 200 bar
+    T_supply = 300 K
+
+Presión objetivo:
+    P_target = 19000000 Pa
+             = 190 bar
+
+Caudal de referencia para calibración:
+    mdot_reference = 0.02 kg/s
+
+Coeficiente de descarga:
+    Cd = 0.8
+
+Las ecuaciones de estado y las razones de presión requieren
+presiones absolutas.
+
+
+3. PROPIEDADES DEL NITRÓGENO
+----------------------------------------------------------------------
+
+Masa molar:
+    M = 0.0280134 kg/mol
+
+Constante universal:
+    R_u = 8.314462618 J/(mol K)
+
+Constante específica:
+    R = R_u/M = 296.803052039 J/(kg K)
+
+Parámetros críticos utilizados:
+    Tc = 126.19 K
+    Pc = 3397800 Pa
+
+Parámetros específicos de Van der Waals:
+
+    a = (27/64)*R²*Tc²/Pc
+      = 174.169692013 Pa·m⁶/kg²
+
+    b = R*Tc/(8*Pc)
+      = 0.00137786130499 m³/kg
+
+El volumen específico se expresa en m³/kg. Por tanto, a y b son
+parámetros específicos por unidad de masa, no parámetros molares.
+
+
+4. CAPACIDADES CALORÍFICAS Y CORRELACIÓN SHOMATE
+----------------------------------------------------------------------
+
+cp se obtiene evaluando una sola vez la correlación:
+
+    tau = T/1000
+
+    cp_molar = A + B*tau + C*tau² + D*tau³ + E/tau²
+
+    cp = cp_molar/M
+
+Coeficientes:
+
+    A = 28.98641
+    B = 1.853978
+    C = -9.647459
+    D = 16.63537
+    E = 0.000117
+
+El rango indicado en el código original para estos coeficientes
+es de 100 a 500 K.
+
+La evaluación se realiza en T_supply:
+
+    cp = 1039.67340915 J/(kg K)
+
+Luego se define:
+
+    cv = cp - R = 742.870357115 J/(kg K)
+
+    gamma = cp/cv = 1.39953546295
+
+Aunque existe una función cp_n2_shomate(T), el programa no vuelve
+a evaluar cp con la temperatura instantánea del depósito.
+
+Esta versión sigue usando propiedades caloríficas constantes.
+
+En Van der Waals se mantiene cv constante y la entalpía se obtiene
+mediante h = u + Pv. El cp anterior no se impone como capacidad
+calorífica real constante del modelo Van der Waals.
+
+
+5. HIPÓTESIS Y SIMPLIFICACIONES
+----------------------------------------------------------------------
+
+5.1. Depósito
+
+Volumen de control fijo y rígido.
+Una entrada y ninguna salida durante la etapa de llenado.
+
+5.2. Intercambios energéticos
+
+Se supone:
+
+    - Qdot = 0.
+    - Trabajo de eje nulo.
+    - Trabajo por cambio de volumen nulo.
+    - Energía cinética y potencial almacenadas despreciables.
+
+La energía de la corriente se contabiliza mediante la entalpía total
+h0 del suministro, supuesto prácticamente en reposo.
+
+El trabajo de flujo está incluido en h0 y no se añade nuevamente.
+
+5.3. Mezcla uniforme
+
+Se considera una sola temperatura T(t), una sola presión P(t)
+y una masa total m(t).
+
+No se resuelven velocidades, turbulencia, estratificación ni
+gradientes espaciales de temperatura.
+
+5.4. Pared y ambiente
+
+No se calcula temperatura de pared ni almacenamiento térmico en ella.
+No existe transferencia de calor con el ambiente.
+
+5.5. Suministro
+
+P_supply y T_supply permanecen constantes.
+No se modela agotamiento ni enfriamiento del reservorio.
+
+5.6. Orificio
+
+Área y Cd constantes.
+Sin apertura dinámica, inercia de válvula ni pérdidas detalladas
+en tuberías o accesorios.
+
+No se modela flujo inverso: si P_tank >= P_supply se devuelve mdot=0.
+
+5.7. Fases
+
+No se consideran cambios de fase ni equilibrio líquido-vapor.
+
+5.8. Modelo híbrido
+
+La ley de caudal de gas ideal se utiliza en ambos modelos.
+
+El depósito Van der Waals no utiliza una solución de flujo compresible
+de gas real a través del orificio.
+
+
+6. RAZÓN CRÍTICA Y REGÍMENES DE FLUJO
+----------------------------------------------------------------------
+
+Se define:
+
+    r = P_tank/P_supply
+
+La razón crítica utilizada es:
+
+    r_crit = (2/(gamma+1))^(gamma/(gamma-1))
+           = 0.528360041637
+
+La presión crítica del tanque es:
+
+    P_critical_tank = r_crit*P_supply
+                    = 105.672008327 bar
+
+Clasificación:
+
+    P_tank >= P_supply:
+        SIN FLUJO
+
+    r <= r_crit y P_tank < P_supply:
+        ESTRANGULADO
+
+    r_crit < r < 1:
+        SUBSÓNICO
+
+En régimen estrangulado, con suministro y área constantes,
+la fórmula produce un caudal constante.
+
+En régimen subsónico, el caudal disminuye conforme aumenta
+la contrapresión del depósito.
+
+Estas relaciones corresponden a una aproximación de gas ideal
+calóricamente perfecto para flujo compresible cuasiestacionario,
+multiplicada por el coeficiente de descarga Cd.
+
+No se calculan perfiles de velocidad ni número de Mach.
+No se introduce Z ni una velocidad del sonido real en el orificio.
+
+
+7. ECUACIONES DE CAUDAL
+----------------------------------------------------------------------
+
+FLUJO ESTRANGULADO:
+
+    mdot =
+        Cd*A_orifice*P_supply
+        *sqrt(gamma/(R*T_supply))
+        *(2/(gamma+1))^((gamma+1)/(2*(gamma-1)))
+
+FLUJO SUBSÓNICO:
+
+    mdot =
+        Cd*A_orifice*P_supply/sqrt(R*T_supply)
+        *sqrt(
+            2*gamma/(gamma-1)
+            *(
+                r^(2/gamma)
+                - r^((gamma+1)/gamma)
+            )
+        )
+
+SIN DIFERENCIA FAVORABLE:
+
+    Si P_tank >= P_supply:
+        mdot = 0
+
+Protecciones numéricas:
+
+    r = max(P_tank/P_supply, 0)
+
+    El término dentro de la raíz de la rama subsónica se limita
+    inferiormente a cero.
+
+
+8. CALIBRACIÓN DEL ORIFICIO
+----------------------------------------------------------------------
+
+Se define:
+
+    F = sqrt(gamma/(R*T_supply))
+        *(2/(gamma+1))^((gamma+1)/(2*(gamma-1)))
+
+Luego:
+
+    A_orifice = mdot_reference/(Cd*P_supply*F)
+
+    d_orifice = sqrt(4*A_orifice/pi)
+
+Resultados:
+
+    A_orifice = 5.44796505914e-07 m²
+
+    d_orifice = 0.832860405568 mm
+
+A_orifice es el área geométrica equivalente de la fórmula.
+Cd*A_orifice es el área ponderada por el coeficiente de descarga.
+
+La calibración fija el caudal de la rama estrangulada.
+Coincide con el caudal inicial deseado si el estado inicial
+pertenece a esa rama.
+
+Estado inicial de esta ejecución:
+
+    Régimen = ESTRANGULADO
+
+    Caudal calculado = 0.02 kg/s
+
+Ambos modelos comparten la misma función mdot(P_tank).
+A igual presión predicen el mismo caudal.
+
+A igual tiempo pueden tener caudales distintos porque sus presiones
+pueden evolucionar de manera diferente.
+
+
+9. BALANCES DE MASA Y ENERGÍA
+----------------------------------------------------------------------
+
+Durante el llenado activo:
+
+    dm/dt = mdot(P_tank)
+
+    dU/dt = mdot(P_tank)*h0_supply
+
+    U = m*u
+
+La masa ya no crece linealmente durante todo el llenado.
+En la rama estrangulada sí crece linealmente con suministro fijo.
+
+Como h0_supply es constante para cada modelo:
+
+    U - U0 = (m - m0)*h0_supply
+
+Esta igualdad sigue siendo válida aunque el caudal cambie con el tiempo.
+
+El aislamiento térmico no obliga a mantener temperatura constante:
+la corriente entrante transporta energía mediante su entalpía.
+
+
+10. MODELO DE GAS IDEAL
+----------------------------------------------------------------------
+
+Ecuación de estado:
+
+    P = m*R*T/V
+
+    v = V/m
+
+Energía interna:
+
+    u = cv*T
+
+Estado de suministro:
+
+    v_supply_ideal = 0.00445204578059 m³/kg
+
+    h0_ideal = cp*T_supply
+             = 311902.022746 J/kg
+
+Masa inicial:
+
+    m0_ideal = P0*V/(R*T0)
+             = 0.0561539598469 kg
+
+Ecuaciones diferenciales:
+
+    dm/dt = mdot(P)
+
+    dT/dt = (mdot(P)/m)*(gamma*T_supply - T)
+
+Mientras existe entrada puede dividirse por dm/dt:
+
+    dT/dm = (gamma*T_supply - T)/m
+
+Solución analítica:
+
+    T(m) = gamma*T_supply
+           + (m0_ideal/m)*(T0 - gamma*T_supply)
+
+Esta es una solución de T en función de m, no una expresión explícita
+de T(t) para caudal variable. El programa obtiene m(t) numéricamente.
+
+El límite formal para masa ilimitada sería:
+
+    gamma*T_supply = 419.860638884 K
+
+No implica que esa temperatura se alcance en este llenado con
+suministro de presión finita y detención por evento.
+
+
+11. MODELO DE VAN DER WAALS
+----------------------------------------------------------------------
+
+Ecuación de estado:
+
+    P = R*T/(v-b) - a/v²
+
+    v = V/m
+
+Dominio admitido:
+
+    v > b
+
+Energía interna:
+
+    u = cv*T - a/v
+
+    U = m*cv*T - a*m²/V
+
+Identidad termodinámica:
+
+    du = cv*dT + [T*(dP/dT)_v - P]*dv
+
+Para Van der Waals:
+
+    (dP/dT)_v = R/(v-b)
+
+    T*(dP/dT)_v - P = a/v²
+
+Con depósito rígido:
+
+    dv/dt = -(v/m)*mdot
+
+Ecuación de temperatura implementada:
+
+    dT/dt =
+        mdot/(m*cv)
+        *[h0_vdw - u + v*(T*(dP/dT)_v - P)]
+
+Forma equivalente:
+
+    dT/dt =
+        mdot/(m*cv)
+        *[h0_vdw - cv*T + 2*a/v]
+
+Condiciones iniciales:
+
+    v0_vdw = 0.889832717524 m³/kg
+
+    m0_vdw = V/v0_vdw = 0.0561903366951 kg
+
+Estado del suministro:
+
+    v_supply_vdw = 0.00448468009184 m³/kg
+
+    u_supply_vdw = 184024.514904 J/kg
+
+    h0_vdw = u_supply_vdw + P_supply*v_supply_vdw
+           = 273718.11674 J/kg
+
+No se sustituye h0_vdw por cp*T_supply.
+
+El depósito y su entalpía de suministro usan Van der Waals,
+pero la válvula conserva la ley de caudal ideal.
+
+
+12. DIFERENCIAS ENTRE MODELOS Y FACTOR Z
+----------------------------------------------------------------------
+
+b representa volumen excluido y a atracción intermolecular.
+
+Cambian:
+
+    - La relación P-v-T.
+    - La masa inicial a iguales P0, T0 y V.
+    - La energía interna.
+    - La entalpía del suministro.
+    - La evolución de temperatura y presión.
+    - El tiempo de cambio de régimen.
+    - El tiempo y masa necesarios para alcanzar el objetivo.
+
+Factor de compresibilidad:
+
+    Z = P*v/(R*T)
+
+Ideal:
+
+    Z = 1
+
+Van der Waals:
+
+    Z = v/(v-b) - a/(R*T*v)
+
+Z mide desviación respecto a la relación ideal.
+No cuantifica por sí solo la exactitud frente a datos experimentales.
+
+Van der Waals es una aproximación, no una referencia exacta
+del comportamiento del nitrógeno.
+
+
+13. MÉTODO NUMÉRICO Y EVENTOS
+----------------------------------------------------------------------
+
+Se integran dos sistemas independientes con:
+
+    y = [m, T]
+
+Configuración de solve_ivp:
+
+    Método: RK45 adaptativo
+    Intervalo: 0 a 5000 s
+    rtol: 1e-9
+    atol: 1e-11
+    max_step: 0.5 s
+    dense_output: True
+
+Los tiempos de los cuadros no son los pasos adaptativos del integrador.
+
+Cada modelo se detiene al resolver:
+
+    P - P_target = 0
+
+con:
+
+    terminal = True
+    direction = 1
+
+Si no aparece el evento se lanza RuntimeError.
+
+Al inicio se comprueba:
+
+    P0 < P_target < P_supply
+    V > 0
+
+Para obtener v a presión y temperatura conocidas, brentq resuelve:
+
+    P_vdw(T,v) - P = 0
+
+Límites:
+
+    v_min = b*(1 + 1e-10)
+
+    v_max = max(100*R*T/P, 1e4*b)
+
+El límite superior se duplica mientras su residuo sea positivo.
+
+Tolerancias:
+
+    xtol = 1e-12
+    rtol = 1e-12
+
+pressure_vdw rechaza v<=b. Este control no verifica por sí solo
+estabilidad termodinámica ni selecciona fases para otros parámetros.
+
+La transición a subsónico se busca con brentq en la salida densa:
+
+    P(t) - P_critical_tank = 0
+
+Se busca si P_target > P_critical_tank.
+
+El procedimiento presupone que la presión crítica se cruza dentro
+del intervalo. No es un detector general para cualquier estado inicial.
+
+
+14. RELOJ COMÚN Y CONGELAMIENTO DE LAS CURVAS
+----------------------------------------------------------------------
+
+Se usan 240 muestras hasta:
+
+    tf_global = max(tf_ideal, tf_vdw)
+
+Para evaluar cada modelo:
+
+    time_I = minimum(time, tf_ideal)
+
+    time_V = minimum(time, tf_vdw)
+
+Después del evento se repite exactamente el último estado.
+
+La meseta posterior es un congelamiento de la presentación.
+No se integra una etapa posterior ni el cierre físico de la válvula.
+
+El programa calcula los caudales mostrados evaluando mass_flow_rate
+en las presiones muestreadas, incluso después de congelar cada estado.
+
+Como P_target < P_supply, el caudal de esa ley al evento puede
+seguir siendo positivo.
+
+Después del evento ese valor es un diagnóstico de la válvula
+a la presión final; no representa masa que siga entrando
+en una simulación físicamente integrada.
+
+flow_regime también clasifica la presión final repetida, no
+el estado mecánico de una válvula cerrada.
+
+Esta advertencia se aplica tanto a los gráficos como al CSV.
+
+
+15. VALIDACIONES NUMÉRICAS
+----------------------------------------------------------------------
+
+15.1. Solución analítica del gas ideal
+
+Se compara TI con:
+
+    T(mI) = gamma*T_supply
+            + (m0_ideal/mI)*(T0 - gamma*T_supply)
+
+Máximo error absoluto en las muestras del reloj común:
+
+    4.42074679e-07 K
+
+15.2. Balance de energía
+
+Para cada modelo se evalúan 1200 tiempos entre 0 y su propio tf.
+
+Residuo:
+
+    U - U0 - (m-m0)*h0_supply
+
+Indicador:
+
+    max(|residuo| / max(|U|, 1.0))
+
+U se evalúa en joules y el piso del denominador es 1 J.
+
+Resultados:
+
+    Ideal = 4.48958443e-09
+
+    VdW = 3.38110647e-09
+
+Estas comprobaciones verifican consistencia numérica y de balances.
+No constituyen validación experimental ni estudio de convergencia.
+
+El programa reporta indicadores sin imponer un umbral automático
+de aceptación.
+
+No se comprueba de forma independiente la integral temporal del caudal:
+la energía entrante se calcula a partir de la masa integrada.
+
+Estado del integrador ideal:
+
+    success = True
+    message = A termination event occurred.
+
+Estado del integrador Van der Waals:
+
+    success = True
+    message = A termination event occurred.
+
+
+16. RESULTADOS DE ESTA EJECUCIÓN
+----------------------------------------------------------------------
+
+GAS IDEAL
+
+    Tiempo final = 419.019702 s
+
+    Transición a subsónico = 209.989 s
+
+    Temperatura final = 418.979601 K
+                      = 145.829601 °C
+
+    Presión final = 190 bar
+
+    Masa final = 7.63945477 kg
+
+    Z final = 1
+
+    Caudal de la ley al evento = 0.00898669245 kg/s
+
+    Caudal promedio = 0.018097719 kg/s
+
+VAN DER WAALS
+
+    Tiempo final = 410.979972 s
+
+    Transición a subsónico = 224.659 s
+
+    Temperatura final = 403.578206 K
+                      = 130.428206 °C
+
+    Presión final = 190 bar
+
+    Masa final = 7.59768838 kg
+
+    Z final = 1.04386914
+
+    Caudal de la ley al evento = 0.00898669245 kg/s
+
+    Caudal promedio = 0.0183500379 kg/s
+
+El caudal promedio se calcula como:
+
+    (m_final-m0)/tf
+
+
+17. COMPARACIÓN E INTERPRETACIÓN
+----------------------------------------------------------------------
+
+Diferencias Van der Waals menos ideal en sus respectivos eventos:
+
+    Delta tiempo = -8.03972996 s
+
+    Delta temperatura = -15.4013948 K
+
+    Delta masa = -0.0417663873 kg
+
+Se comparan estados a igual presión objetivo, no necesariamente
+a igual tiempo.
+
+Para comparar simultáneamente los modelos debe comprobarse
+si alguno ya está congelado.
+
+No deben atribuirse todas las diferencias solo a Z:
+también cambian la energía interna y la entalpía del suministro.
+
+Durante la rama estrangulada el caudal permanece constante.
+Después de la transición disminuye con la contrapresión.
+
+El calentamiento se obtiene del balance de energía, no de una
+transferencia de calor externa.
+
+
+18. ACERCAMIENTO A LA PRESIÓN DEL SUMINISTRO
+----------------------------------------------------------------------
+
+Al acercarse r a 1 desde abajo, la ley subsónica da:
+
+    mdot -> 0
+
+El programa termina antes, en P_target < P_supply.
+
+No simula ni demuestra el tiempo de igualación exacta de presiones.
+
+La condición mdot->0 por sí sola no demuestra que el tiempo
+de igualación sea infinito.
+
+Esta ley se comporta como sqrt(1-r) cerca de r=1.
+Por tanto, no se afirma un acercamiento necesariamente asintótico.
+
+
+19. MAPA TÉRMICO 2D: CONSTRUCCIÓN Y LIMITACIONES
+----------------------------------------------------------------------
+
+El modelo físico calcula únicamente T(t).
+El mapa de colores es ilustrativo, no una solución física T(x,y,t).
+
+Malla:
+
+    150 columnas
+    80 filas
+
+El campo parte de T0 expresada en °C.
+
+Se aplican cinco actualizaciones visuales por cuadro con:
+
+    Difusión: r_num = 0.075
+    Advección: 0.045
+    Relajación global: 0.055
+
+Dos gaussianas representan entrada y pluma.
+
+El objetivo local incorpora contribuciones con pesos 0.20 y 0.07
+respecto al calentamiento positivo sobre T0.
+
+Las relajaciones locales tienen pesos 0.10 y 0.03.
+
+La posición vertical oscila según:
+
+    0.055*NY*sin(2*pi*k/70)
+
+Los bordes copian celdas vecinas como aislamiento visual.
+
+No hay tamaños físicos de celda, paso físico de transporte,
+velocidad ni difusividad asociados a esos coeficientes.
+
+No se resuelven una EDP física de calor ni Navier-Stokes.
+
+El mapa no utiliza mdot para ajustar la intensidad del chorro:
+se construye a partir de T promedio y del índice de cuadro.
+
+Por ello, no representa físicamente la reducción del caudal.
+
+La media espacial no está obligada a coincidir exactamente con T(t).
+Puede haber retraso y sobretemperaturas artificiales.
+
+El campo puede seguir cambiando después de congelarse T promedio.
+Su aspecto depende de N_FRAMES.
+
+Los mapas comparten escala de colores, pero no predicen temperaturas
+de pared, puntos calientes, flujos de calor ni tiempos de mezcla.
+
+El campo no retroalimenta las ecuaciones de masa y energía.
+
+
+20. ALCANCE DE LA VERSIÓN 2
+----------------------------------------------------------------------
+
+Se amplía la Versión 1 incorporando:
+
+    - Caudal variable según la presión.
+    - Rama estrangulada y subsónica.
+    - Calibración del orificio.
+    - Cálculo del tiempo de transición.
+    - Exportación de resultados en CSV.
+
+Se mantienen:
+
+    - Depósito adiabático 0D.
+    - Suministro constante.
+    - cv constante.
+    - Van der Waals como aproximación de gas real.
+    - Visualización térmica ilustrativa.
+
+No se incorporan:
+
+    - Calor a pared o ambiente.
+    - Capacidad térmica de pared.
+    - cp(T) dinámico.
+    - Modelo de válvula para gas real.
+    - Agotamiento del suministro.
+    - Flujo inverso.
+    - CFD.
+    - Cambios de fase.
+    - Validación experimental.
+
+Es una comparación didáctica de modelos.
+No constituye certificación de diseño de equipos de alta presión.
+
+Posibles ampliaciones: pared y ambiente, capacidades variables
+y flujo de gas real, verificando nuevamente balances y dominio.
+
+
+21. ARCHIVOS Y DIRECTORIO DE SALIDA
+----------------------------------------------------------------------
+
+Todos los archivos se guardan en:
+
+    C:\Users\Paul Berdichewsky\OneDrive\Escritorio\usm\ICF130\Proyecto computacional\Version2
+
+Reporte TXT:
+    C:\Users\Paul Berdichewsky\OneDrive\Escritorio\usm\ICF130\Proyecto computacional\Version2\flujovariable_reporte.txt
+
+Datos CSV:
+    C:\Users\Paul Berdichewsky\OneDrive\Escritorio\usm\ICF130\Proyecto computacional\Version2\flujovariable_datos.csv
+
+Imagen PNG:
+    C:\Users\Paul Berdichewsky\OneDrive\Escritorio\usm\ICF130\Proyecto computacional\Version2\flujovariable_foto_sim.png
+
+Video MP4:
+    C:\Users\Paul Berdichewsky\OneDrive\Escritorio\usm\ICF130\Proyecto computacional\Version2\flujovariable_video_sim.mp4
+
+GIF opcional:
+    C:\Users\Paul Berdichewsky\OneDrive\Escritorio\usm\ICF130\Proyecto computacional\Version2\ICF130_Tema7_flujo_variable.gif
+
+Configuración:
+
+    SAVE_TXT = True
+    SAVE_CSV = True
+    SAVE_PNG = True
+    SAVE_MP4 = True
+    SAVE_GIF = False
+
+Animación:
+
+    N_FRAMES = 240
+    FPS = 30
+
+Los FPS son velocidad de reproducción, no el paso del integrador.
+El GIF utiliza 18 FPS.
+
+En un script se utiliza su propia carpeta.
+En un notebook se utiliza la carpeta de trabajo.
+
+Los archivos de igual nombre se reemplazan al ejecutar nuevamente.
+
+TXT y CSV se generan antes del mapa térmico y no requieren FFmpeg.
+El MP4 requiere FFmpeg.
+
+Las rutas anteriores indican destinos configurados; la generación
+de cada formato depende de su opción y de que termine la exportación.
+
+El CSV contiene 240 muestras del reloj común con:
+
+    tiempo,
+    presiones,
+    temperaturas en °C,
+    masas,
+    caudales de la ley de válvula,
+    factores Z.
+
+Incluye estados repetidos después del evento de cada modelo.
+No contiene todos los pasos internos de RK45 ni una etapa física
+posterior al cierre.
+
+Los parámetros y resultados numéricos de este reporte proceden
+directamente de la ejecución actual.
+
+======================================================================
+FIN DEL REPORTE — VERSIÓN 2
+======================================================================

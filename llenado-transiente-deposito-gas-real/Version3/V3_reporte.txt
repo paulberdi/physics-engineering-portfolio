@@ -1,0 +1,93 @@
+ICF130 — VERSIÓN 3
+LLENADO TRANSIENTE CON PARED TÉRMICA
+==============================================================================
+
+1. MODELO FÍSICO
+
+dm/dt = mdot(P)
+dUg/dt = mdot*h_in - Qdot_gw
+Cw*dTw/dt = Qdot_gw - Qdot_wa
+Qdot_gw = UA_gw*(Tg-Tw)
+Qdot_wa = UA_wa*(Tw-Tamb)
+
+2. CONDICIONES
+
+Volumen = 0.05 m3
+P inicial = 1.000 bar
+T inicial = 300.000 K
+P suministro = 200.000 bar
+T suministro = 300.000 K
+P objetivo = 190.000 bar
+P crítica = 105.659795 bar
+Caudal estrangulado de referencia = 0.020000 kg/s
+Cd = 0.800000
+Área efectiva = 5.447477836751e-07 m2
+Diámetro efectivo = 0.832823 mm
+
+3. PARED TÉRMICA
+
+T ambiente = 300.000 K
+T pared inicial = 300.000 K
+Masa pared = 8.000000 kg
+cp pared = 500.000000 J/(kg K)
+Capacidad térmica pared = 4000.000000 J/K
+UA gas-pared = 8.000000 W/K
+UA pared-ambiente = 3.000000 W/K
+
+Los parámetros térmicos de pared son valores de estudio, no datos experimentales medidos.
+
+==============================================================================
+RESULTADOS — IDEAL
+==============================================================================
+Tiempo final V3 = 456.401206150 s
+Tiempo final V2 = 418.921605836 s
+Temperatura gas final V3 = 385.323361140 K
+Temperatura gas final V3 = 112.173361140 C
+Temperatura pared final = 70.338152516 C
+Temperatura gas final V2 = 145.937326624 C
+Masa final = 8.306726334 kg
+Presión final = 190.000000000 bar
+Factor Z final = 1.000000000
+Caudal de la ley al evento = 0.008985953 kg/s
+Energía de entrada = 2571.703409175 kJ
+Calor gas->pared = 208.600634445 kJ
+Calor pared->ambiente = 34.648024379 kJ
+Tiempo de transición a subsónico = 228.991341361 s
+Error relativo balance gas = 1.349454e-10
+Error relativo balance pared = 5.208113e-14
+Error relativo balance total = 1.349365e-10
+Residuo energético total máximo = 6.421845e-06 J
+
+==============================================================================
+RESULTADOS — VDW
+==============================================================================
+Tiempo final V3 = 440.787451523 s
+Tiempo final V2 = 410.892454611 s
+Temperatura gas final V3 = 379.434775342 K
+Temperatura gas final V3 = 106.284775342 C
+Temperatura pared final = 61.353946747 C
+Temperatura gas final V2 = 130.513806844 C
+Masa final = 8.132376467 kg
+Presión final = 190.000000000 bar
+Factor Z final = 1.037291063
+Caudal de la ley al evento = 0.008985953 kg/s
+Energía de entrada = 2208.966884659 kJ
+Calor gas->pared = 161.641431970 kJ
+Calor pared->ambiente = 23.625644984 kJ
+Tiempo de transición a subsónico = 240.162385155 s
+Error relativo balance gas = 8.665050e-11
+Error relativo balance pared = 3.563889e-13
+Error relativo balance total = 8.667985e-11
+Residuo energético total máximo = 3.337063e-06 J
+
+==============================================================================
+VALIDACIÓN ADICIONAL
+==============================================================================
+Error máximo solución analítica ideal adiabática = 2.096550e-06 K
+
+INTERPRETACIÓN DE V3
+
+Respecto de V2, parte de la energía que entra con la corriente de gas ya no queda almacenada únicamente en el gas.
+El gas transfiere energía a la pared, la pared aumenta su temperatura y simultáneamente intercambia calor con el ambiente.
+Como consecuencia, la temperatura del gas es menor que en la referencia adiabática.
+A una misma presión objetivo, una menor temperatura implica que debe acumularse una cantidad diferente de masa y cambia el tiempo necesario para completar el llenado.

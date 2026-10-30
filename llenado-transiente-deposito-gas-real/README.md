@@ -1,6 +1,6 @@
 # Llenado transiente de un depósito con gas real
 
-Proyecto computacional semestral en desarrollo para **Fundamentos de Termodinámica Aplicada (ICF130)**, Universidad Técnica Federico Santa María, Campus Santiago San Joaquín.
+Proyecto computacional semestral de **Fundamentos de Termodinámica Aplicada (ICF130)**, Universidad Técnica Federico Santa María, Campus Santiago San Joaquín.
 
 **Autores:** Paul Berdichewsky, Benjamín Arancibia y Andrés Cerón.
 
@@ -12,28 +12,31 @@ El desarrollo se construyó de forma incremental: cada versión introduce una mo
 
 ## Progresión del modelo
 
-### V1 — Caudal másico constante
+### Version1 — Caudal másico constante
 
 - Depósito rígido y modelo de parámetros concentrados (0D).
 - Llenado adiabático.
 - Caudal másico constante.
 - Comparación gas ideal vs. Van der Waals.
-- Validación del caso ideal mediante solución analítica.
+- Validación del caso ideal mediante solución analítica y balance energético.
+- Incluye el script original, reporte, imagen final y animación MP4.
 
-### V2 — Caudal compresible variable
+### Version2 — Caudal compresible variable
 
-- Reemplaza el caudal constante por una ley de flujo compresible.
+- Sustituye el caudal constante por una ley de flujo compresible.
 - Distingue régimen estrangulado y subsónico.
 - El caudal depende de la presión instantánea del depósito.
 - Mantiene la comparación gas ideal vs. Van der Waals.
+- Incluye script, reporte, datos CSV, figura y animación MP4.
 
-### V3 — Pared térmica
+### Version3 — Pared térmica
 
-- Conserva el modelo de caudal de V2.
+- Conserva el modelo de caudal de Version2.
 - Introduce una pared con capacidad térmica propia.
 - Modela transferencia de calor gas → pared → ambiente.
 - Variables dinámicas principales: masa del gas, temperatura del gas y temperatura de la pared.
-- Incluye validaciones de balance energético del gas, pared y sistema completo.
+- Incluye validaciones del balance energético del gas, la pared y el sistema completo.
+- Incluye script, reporte, datos CSV, dos figuras y animación MP4.
 
 ## Modelo físico base
 
@@ -44,7 +47,7 @@ dm/dt  = mdot
 dUg/dt = mdot * h_in + Qdot
 ```
 
-En V3 se incorporan además
+En Version3 se incorporan además
 
 ```text
 dUg/dt     = mdot * h_in - Qdot_gw
@@ -53,11 +56,13 @@ Qdot_gw    = UA_gw * (Tg - Tw)
 Qdot_wa    = UA_wa * (Tw - Tamb)
 ```
 
-La presión se obtiene con la ecuación de estado correspondiente. Para Van der Waals:
+Para Van der Waals:
 
 ```text
 P = R*T/(v-b) - a/v^2
 ```
+
+El modelo es de parámetros concentrados (0D). Las visualizaciones térmicas 2D son ilustrativas y no constituyen una simulación CFD ni una solución espacial de las ecuaciones de transporte.
 
 ## Método numérico
 
@@ -66,35 +71,40 @@ El proyecto está implementado en Python y utiliza principalmente:
 - `NumPy` para cálculo numérico;
 - `SciPy` (`solve_ivp`) para integración temporal;
 - `SciPy` (`brentq`) para resolver estados de Van der Waals cuando se conocen presión y temperatura;
-- `Matplotlib` para gráficos y animaciones.
+- `Matplotlib` para gráficos y animaciones;
+- `Pillow` e `imageio-ffmpeg` para las salidas visuales.
 
-Las versiones actuales usan integración RK45 adaptativa y eventos para detener la simulación al alcanzar la presión objetivo.
+Las versiones actuales usan integración RK45 adaptativa y eventos para detener la simulación al alcanzar la presión objetivo. Los tres scripts incluidos fueron comprobados con `python -m py_compile` antes de incorporarlos al repositorio.
 
-## Estado actual del desarrollo
-
-- V1: implementada.
-- V2: implementada.
-- V3: implementada.
-- Validaciones de balances: implementadas.
-- Comparación con solución analítica del caso ideal adiabático: implementada.
-- Próximos pasos: sensibilidad de parámetros térmicos, rango de validez de Van der Waals y estudio de distintas condiciones de suministro.
-
-El modelo es de parámetros concentrados (0D). Las visualizaciones térmicas 2D usadas durante el desarrollo son ilustrativas y no constituyen una simulación CFD ni una solución espacial de las ecuaciones de transporte.
-
-## Estructura del repositorio
+## Estructura del proyecto
 
 ```text
 llenado-transiente-deposito-gas-real/
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
-├── src/
-│   └── README.md
-└── reports/
-    └── README.md
+├── Avance1+v3.2.pdf
+├── Version1/
+│   ├── Avance1.py
+│   ├── ideal_vs_vdw_reporte.txt
+│   ├── ideal_vs_vdw_sim.mp4
+│   └── ideal_vs_vdw_sim_final.png
+├── Version2/
+│   ├── Avance2.py
+│   ├── flujovariable_datos.csv
+│   ├── flujovariable_foto_sim.png
+│   ├── flujovariable_reporte.txt
+│   └── flujovariable_video_sim.mp4
+└── Version3/
+    ├── Version3.py
+    ├── V3_datos.csv
+    ├── V3_reporte.txt
+    ├── V3_comparacion_V2.png
+    ├── V3_resultado_final.png
+    └── V3_simulacion.mp4
 ```
 
-Los scripts V1, V2 y V3 y sus reportes de ejecución existen actualmente en el OneDrive de trabajo del curso. Se mantienen allí mientras se consolidan los nombres y la organización definitiva antes de versionarlos en esta carpeta. Esto evita presentar en el portafolio archivos intermedios como si fueran una versión final estable.
+`Avance1+v3.2.pdf` es el informe de avance del proyecto y documenta la progresión V1 → V2 → V3.
 
 ## Dependencias
 
@@ -102,4 +112,4 @@ Los scripts V1, V2 y V3 y sus reportes de ejecución existen actualmente en el O
 pip install -r requirements.txt
 ```
 
-Las animaciones MP4 requieren **FFmpeg**. Los archivos generados automáticamente —MP4, GIF y otros resultados reproducibles— están excluidos por defecto mediante `.gitignore` para mantener el repositorio liviano.
+Las animaciones MP4 requieren **FFmpeg**. En este portafolio se conservaron los archivos reales del proyecto —código, datos, reportes, figuras, animaciones e informe— para que el trabajo pueda revisarse de forma completa.

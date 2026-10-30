@@ -1,17 +1,14 @@
 # Llenado transiente de un depósito con gas real
 
-Proyecto computacional en desarrollo para **Fundamentos de Termodinámica Aplicada (ICF130)**, Universidad Técnica Federico Santa María, Campus Santiago San Joaquín.
+Proyecto computacional semestral en desarrollo para **Fundamentos de Termodinámica Aplicada (ICF130)**, Universidad Técnica Federico Santa María, Campus Santiago San Joaquín.
 
 **Autores:** Paul Berdichewsky, Benjamín Arancibia y Andrés Cerón.
 
 ## Descripción
 
-Se estudia el llenado transiente de un depósito rígido con nitrógeno desde un suministro a mayor presión. El modelo trata el depósito como un volumen de control abierto y resuelve conjuntamente los balances transientes de masa y energía, comparando dos ecuaciones de estado:
+Se estudia el llenado transiente de un depósito rígido con nitrógeno desde un suministro a mayor presión. El depósito se modela como un volumen de control abierto y se resuelven conjuntamente los balances transientes de masa y energía, comparando gas ideal y Van der Waals.
 
-- gas ideal;
-- Van der Waals.
-
-El desarrollo se construyó de forma incremental, de manera que cada versión agrega una modificación física sobre la anterior.
+El desarrollo se construyó de forma incremental: cada versión introduce una modificación física adicional sobre la anterior para poder identificar su efecto en los resultados.
 
 ## Progresión del modelo
 
@@ -19,7 +16,7 @@ El desarrollo se construyó de forma incremental, de manera que cada versión ag
 
 - Depósito rígido y modelo de parámetros concentrados (0D).
 - Llenado adiabático.
-- Caudal másico constante de referencia.
+- Caudal másico constante.
 - Comparación gas ideal vs. Van der Waals.
 - Validación del caso ideal mediante solución analítica.
 
@@ -64,7 +61,7 @@ P = R*T/(v-b) - a/v^2
 
 ## Método numérico
 
-El proyecto está implementado en Python. Se utilizan principalmente:
+El proyecto está implementado en Python y utiliza principalmente:
 
 - `NumPy` para cálculo numérico;
 - `SciPy` (`solve_ivp`) para integración temporal;
@@ -73,7 +70,18 @@ El proyecto está implementado en Python. Se utilizan principalmente:
 
 Las versiones actuales usan integración RK45 adaptativa y eventos para detener la simulación al alcanzar la presión objetivo.
 
-## Estructura
+## Estado actual del desarrollo
+
+- V1: implementada.
+- V2: implementada.
+- V3: implementada.
+- Validaciones de balances: implementadas.
+- Comparación con solución analítica del caso ideal adiabático: implementada.
+- Próximos pasos: sensibilidad de parámetros térmicos, rango de validez de Van der Waals y estudio de distintas condiciones de suministro.
+
+El modelo es de parámetros concentrados (0D). Las visualizaciones térmicas 2D usadas durante el desarrollo son ilustrativas y no constituyen una simulación CFD ni una solución espacial de las ecuaciones de transporte.
+
+## Estructura del repositorio
 
 ```text
 llenado-transiente-deposito-gas-real/
@@ -81,44 +89,17 @@ llenado-transiente-deposito-gas-real/
 ├── requirements.txt
 ├── .gitignore
 ├── src/
-│   ├── v1_caudal_constante.py
-│   ├── v2_caudal_variable.py
-│   └── v3_pared_termica.py
+│   └── README.md
 └── reports/
-    ├── v1_reporte.txt
-    ├── v2_reporte.txt
-    └── v3_reporte.txt
+    └── README.md
 ```
 
-Los CSV, PNG, GIF y MP4 generados por los scripts se consideran resultados reproducibles y no se incluyen por defecto para mantener el repositorio liviano.
+Los scripts V1, V2 y V3 y sus reportes de ejecución existen actualmente en el OneDrive de trabajo del curso. Se mantienen allí mientras se consolidan los nombres y la organización definitiva antes de versionarlos en esta carpeta. Esto evita presentar en el portafolio archivos intermedios como si fueran una versión final estable.
 
-## Instalación
+## Dependencias
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Para exportar animaciones MP4 se necesita **FFmpeg** disponible en el sistema.
-
-## Ejecución
-
-```bash
-python src/v1_caudal_constante.py
-python src/v2_caudal_variable.py
-python src/v3_pared_termica.py
-```
-
-Cada script guarda sus resultados en el directorio donde se encuentra el archivo.
-
-## Estado actual
-
-- V1: implementada.
-- V2: implementada.
-- V3: implementada.
-- Validaciones de balances: implementadas.
-- Comparación con solución analítica del caso ideal adiabático: implementada.
-- Próximos pasos: análisis de sensibilidad de parámetros térmicos, evaluación del rango de validez de Van der Waals y estudio de distintas condiciones del suministro.
-
-## Alcance
-
-El modelo es de parámetros concentrados (0D). Las visualizaciones térmicas 2D incluidas en los scripts son ilustrativas y no constituyen una simulación CFD ni una solución espacial de las ecuaciones de transporte.
+Las animaciones MP4 requieren **FFmpeg**. Los archivos generados automáticamente —MP4, GIF y otros resultados reproducibles— están excluidos por defecto mediante `.gitignore` para mantener el repositorio liviano.

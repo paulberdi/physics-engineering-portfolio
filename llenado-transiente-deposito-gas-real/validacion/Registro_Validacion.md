@@ -6,14 +6,14 @@ El grupo usó antes Python 3.12.14 con las mismas versiones de librerías.
 ## 1. Ejecución
 | Comprobación | Resultado | Evidencia |
 |---|---|---|
-| `python main.py --sin-video` sin errores | Sí, 61-63 s | `02_RESULTADOS/registro_ejecucion.json` |
+| `python main.py --sin-video` sin errores | Sí, 61-63 s | `resultados/registro_ejecucion.json` |
 | `python main.py --solo-video` exporta MP4 | Sí, 92 s; 432 fotogramas H.264, 1920×1080, 24 fps, 18 s; decodificado sin errores | `Diagnosticos/video_ffprobe.txt` |
 | `python main.py --caso V3 --eos pr` | Sí, imprime resumen y guarda la serie | prueba manual |
-| Pruebas automáticas | 25 de 25 pasan en ~8 s | `Pruebas/pytest_resultado.txt` |
+| Pruebas automáticas | 25 de 25 pasaban en ~8 s en la ejecución original | `Pruebas/pytest_resultado.txt` |
 | Instalación limpia desde `requirements.txt` | Sí; resultados idénticos (diferencia 0) a `02_RESULTADOS` | `Diagnosticos/reproducibilidad_entorno_limpio.txt` |
 | Continuidad con el trabajo del grupo | 74 CSV coinciden con los de OneDrive (< 1e-6 en magnitudes físicas) | `Diagnosticos/comparacion_con_originales.txt` |
 | Presentación .pptx válida | Pasa la validación de esquema y relaciones; revisión visual de las 21 diapositivas | `Diagnosticos/presentacion_validacion.txt` |
-| Documentos LaTeX | Compilan sin errores ni desbordes de línea | `03_DOCUMENTACION_INTERNA/latex` |
+| Documentos LaTeX | Compilan sin errores ni desbordes de línea | `documentacion/latex` |
 
 ## 2. Pruebas físicas y numéricas (pytest)
 | Prueba | Qué verifica | Tolerancia |

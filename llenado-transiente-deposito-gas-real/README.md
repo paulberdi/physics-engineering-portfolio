@@ -1,126 +1,70 @@
 # Llenado transiente de un depósito con gas real
 
-Proyecto computacional semestral de **Fundamentos de Termodinámica Aplicada (ICF130)**, Universidad Técnica Federico Santa María, Campus Santiago San Joaquín.
-
+**Proyecto final ICF130 · Fundamentos de Termodinámica Aplicada · UTFSM (2026-2)**  
 **Autores:** Paul Berdichewsky, Benjamín Arancibia y Andrés Cerón.
 
-## Descripción
+Simulación del llenado de un depósito rígido de 50 L con nitrógeno. Se resuelven balances transientes de masa y energía con tres ecuaciones de estado: **gas ideal, Van der Waals y Peng–Robinson**. El modelo evoluciona desde un caudal fijo (V1), a un caudal compresible variable (V2) y a una pared con inercia térmica e intercambio con el ambiente (V3).
 
-Se estudia el llenado transiente de un depósito rígido con nitrógeno desde un suministro a mayor presión. El depósito se modela como un volumen de control abierto y se resuelven conjuntamente los balances transientes de masa y energía, comparando gas ideal y Van der Waals.
+![Resultado V3 de las tres ecuaciones de estado](resultados/Animaciones_MP4/ICF130_V1_V2_V3_tres_EOS_V3_final.png)
 
-El desarrollo se construyó de forma incremental: cada versión introduce una modificación física adicional sobre la anterior para poder identificar su efecto en los resultados.
+## Acceso rápido
 
-## Progresión del modelo
+| Quiero… | Ir a… |
+|---|---|
+| **Ejecutar las simulaciones** | [codigo/](codigo/) |
+| **Ver la presentación** | [entrega/](entrega/) |
+| **Leer el artículo científico** | [articulo/Informe_ICF130_Formato_USM.pdf](articulo/Informe_ICF130_Formato_USM.pdf) |
+| **Consultar datos, gráficos y animación** | [resultados/](resultados/) |
+| **Revisar informes y material para la defensa** | [documentacion/](documentacion/) |
+| **Consultar pruebas y diagnósticos** | [validacion/](validacion/) |
+| **Ver las versiones originales V1–V3** | [historico/](historico/) |
 
-### Version1 — Caudal másico constante
+## Estructura
 
-- Depósito rígido y modelo de parámetros concentrados (0D).
-- Llenado adiabático.
-- Caudal másico constante.
-- Comparación gas ideal vs. Van der Waals.
-- Validación del caso ideal mediante solución analítica y balance energético.
-- Incluye el script original, reporte, imagen final y animación MP4.
-
-### Version2 — Caudal compresible variable
-
-- Sustituye el caudal constante por una ley de flujo compresible.
-- Distingue régimen estrangulado y subsónico.
-- El caudal depende de la presión instantánea del depósito.
-- Mantiene la comparación gas ideal vs. Van der Waals.
-- Incluye script, reporte, datos CSV, figura y animación MP4.
-
-### Version3 — Pared térmica
-
-- Conserva el modelo de caudal de Version2.
-- Introduce una pared con capacidad térmica propia.
-- Modela transferencia de calor gas → pared → ambiente.
-- Variables dinámicas principales: masa del gas, temperatura del gas y temperatura de la pared.
-- Incluye validaciones del balance energético del gas, la pared y el sistema completo.
-- Incluye script, reporte, datos CSV, dos figuras y animación MP4.
-
-## Modelo físico base
-
-Los balances generales utilizados son
-
-```text
-dm/dt  = mdot
-dUg/dt = mdot * h_in + Qdot
-```
-
-En Version3 se incorporan además
-
-```text
-dUg/dt     = mdot * h_in - Qdot_gw
-Cw*dTw/dt  = Qdot_gw - Qdot_wa
-Qdot_gw    = UA_gw * (Tg - Tw)
-Qdot_wa    = UA_wa * (Tw - Tamb)
-```
-
-Para Van der Waals:
-
-```text
-P = R*T/(v-b) - a/v^2
-```
-
-El modelo es de parámetros concentrados (0D). Las visualizaciones térmicas 2D son ilustrativas y no constituyen una simulación CFD ni una solución espacial de las ecuaciones de transporte.
-
-## Método numérico
-
-El proyecto está implementado en Python y utiliza principalmente:
-
-- `NumPy` para cálculo numérico;
-- `SciPy` (`solve_ivp`) para integración temporal;
-- `SciPy` (`brentq`) para resolver estados de Van der Waals cuando se conocen presión y temperatura;
-- `Matplotlib` para gráficos y animaciones;
-- `Pillow` e `imageio-ffmpeg` para las salidas visuales.
-
-Las versiones actuales usan integración RK45 adaptativa y eventos para detener la simulación al alcanzar la presión objetivo. Los tres scripts incluidos fueron comprobados con `python -m py_compile` antes de incorporarlos al repositorio.
-
-## Estructura del proyecto
-
-```text
+~~~text
 llenado-transiente-deposito-gas-real/
-├── README.md
-├── requirements.txt
-├── .gitignore
-├── Avance1+v3.2.pdf
-├── Version1/
-│   ├── Avance1.py
-│   ├── ideal_vs_vdw_reporte.txt
-│   ├── ideal_vs_vdw_sim.mp4
-│   └── ideal_vs_vdw_sim_final.png
-├── Version2/
-│   ├── Avance2.py
-│   ├── flujovariable_datos.csv
-│   ├── flujovariable_foto_sim.png
-│   ├── flujovariable_reporte.txt
-│   └── flujovariable_video_sim.mp4
-└── Version3/
-    ├── Version3.py
-    ├── V3_datos.csv
-    ├── V3_reporte.txt
-    ├── V3_comparacion_V2.png
-    ├── V3_resultado_final.png
-    └── V3_simulacion.mp4
-```
+├── README.md                 # guía principal
+├── codigo/                   # única copia del código final, configuración y tests
+├── entrega/                  # presentación PDF y PPTX fragmentadas
+├── articulo/                 # manuscrito académico, LaTeX, figuras y datos
+├── resultados/               # CSV, gráficos, capturas y animación
+├── documentacion/            # informe técnico, desarrollo matemático y defensa
+├── validacion/               # resultados de tests, diagnósticos y registro
+├── historico/                # avance original y V1, V2, V3 sin modificar
+└── reconstruir_multimedia.py # recupera PDF, PPTX y MP4
+~~~
 
-`Avance1+v3.2.pdf` es el informe de avance del proyecto y documenta la progresión V1 → V2 → V3.
+## Reproducir
 
-## Dependencias
+Se recomienda **Python 3.12 o 3.13**. Desde la raíz de este proyecto:
 
-```bash
-pip install -r requirements.txt
-```
+~~~bash
+cd codigo
+python -m pip install -r requirements.txt
+python main.py --sin-video
+python -m pytest
+python main.py --caso V3 --eos pr
+~~~
 
-Las animaciones MP4 requieren **FFmpeg**. En este portafolio se conservaron los archivos reales del proyecto —código, datos, reportes, figuras, animaciones e informe— para que el trabajo pueda revisarse de forma completa.
+Las nuevas salidas de la ejecución se escriben por defecto en **codigo/resultados/**, que se ignora en Git para no mezclar resultados nuevos con los datos de referencia publicados en **resultados/**. Para animación se necesita FFmpeg; las instrucciones están en [codigo/README.md](codigo/README.md).
 
-## Proyecto final corregido y artículo científico (noviembre de 2026)
+### Recuperar la presentación y el MP4
 
-Además de las versiones históricas V1–V3, este repositorio contiene la entrega final ampliada:
+Por su tamaño, los archivos grandes se almacenan en partes. Desde la raíz:
 
-- [Proyecto_Final_Corregido](Proyecto_Final_Corregido/): código, pruebas, documentación, validación, resultados, gráficos, presentación y animación.
-- [Articulo_Cientifico_USM](Articulo_Cientifico_USM/): manuscrito universitario, fuentes LaTeX, bibliografía, datos y gráficos.
+~~~bash
+python reconstruir_multimedia.py
+~~~
 
-Los archivos multimedia grandes (Presentacion_Final.pdf, Presentacion_Final.pptx y la animación MP4) están conservados como fragmentos binarios dentro de directorios .parts. Para reconstruirlos sin pérdida, ejecutar `python reconstruir_multimedia.py` desde esta carpeta; se verifica SHA-256 y tamaño.
+El script reconstruye **Presentacion_Final.pdf**, **Presentacion_Final.pptx** y **ICF130_V1_V2_V3_tres_EOS.mp4** y comprueba su tamaño y hash SHA-256. Las piezas originales permanecen intactas.
 
-Los parámetros térmicos y de conexión son valores de estudio; las verificaciones numéricas no sustituyen una validación experimental.
+## Criterio físico y alcance
+
+- **V1:** llenado adiabático con caudal fijo de 20 g/s; presión objetivo histórica de 100 bar.
+- **V2:** caudal compresible, con regímenes estrangulado y subsónico; presión objetivo histórica de 190 bar.
+- **V3:** modelo V2 más temperatura dinámica de pared y transferencia gas–pared–ambiente, también hasta 190 bar.
+- **Comparación controlada:** las diferencias entre V1 y V2 se vuelven a evaluar a **igual presión objetivo**, evitando confundir cambios de caudal con cambios de objetivo.
+
+**Límites:** el depósito se trata como sistema concentrado (0D); la ley de caudal utiliza una aproximación isentrópica de gas ideal común a las tres EOS. Las visualizaciones no son CFD. Los parámetros térmicos/de conexión son hipótesis de estudio, no mediciones calibradas. Las pruebas y el contraste de propiedades con HEOS/Span constituyen **verificación computacional, no validación experimental**. El artículo es un manuscrito académico, no una publicación arbitrada.
+
+La estructura organiza el proyecto; **no modifica las ecuaciones ni los resultados históricos**.

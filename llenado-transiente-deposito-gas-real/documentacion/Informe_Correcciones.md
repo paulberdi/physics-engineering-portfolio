@@ -1,4 +1,4 @@
-# Proyecto final corregida — ICF130 (copia independiente)
+# Correcciones metodológicas — proyecto final ICF130
 
 Se conserva la versión histórica y sus resultados. Esta versión agrega experimentos que separan el efecto del caudal del cambio de presión objetivo, y evalúa la masa térmica efectiva de la pared.
 
@@ -41,11 +41,11 @@ La masa de 54 kg es **solo una variación hipotética**, no representa una medic
 
 ## Reproducibilidad
 
-En `01_ENTREGA_PROFESOR/Codigo_Final`:
+En `codigo/`, desde la raíz del proyecto:
 
 ```bash
 python -m pip install -r requirements.txt
-python main.py --sin-video --salida ../../02_RESULTADOS
+python main.py --sin-video
 python -m pytest
 ```
 

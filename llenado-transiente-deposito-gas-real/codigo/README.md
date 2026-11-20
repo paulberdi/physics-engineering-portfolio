@@ -42,7 +42,7 @@ python main.py --sin-video           # todo menos el video (~1 min)
 python main.py --solo-video          # solo la animación MP4 (~1,5 min)
 python main.py --caso V3 --eos pr    # un caso, con resumen en pantalla (eos: ideal, vdw, pr)
 python main.py --salida OTRA_CARPETA # escribir los resultados en otra carpeta
-python -m pytest                     # 25 pruebas automáticas (~10 s)
+python -m pytest                     # suite de pruebas automáticas
 ```
 
 No hay que editar el código para cambiar de versión o de ecuación de estado.
@@ -82,7 +82,7 @@ Depósito rígido, una entrada y sin salida, sin trabajo de eje, gas bien mezcla
 suministro de remanso constante, energía cinética y potencial almacenadas despreciables,
 cv ideal constante (742,2 J/(kg K)) como fondo de las tres EOS, conexión modelada con flujo
 isentrópico de gas ideal común a las tres EOS (Cd·A fijo), y pared con una sola temperatura (V3).
-Detalles, ecuaciones y fuentes en la documentación interna del grupo.
+Detalles, ecuaciones y fuentes en [documentacion/](../documentacion/) y [articulo/](../articulo/).
 
 ## Corrección metodológica — 20 noviembre 2026
 
@@ -94,3 +94,5 @@ Se conservan las nueve corridas históricas y se añaden comparaciones controlad
 - **Verificación frente a validación:** los residuos, límites y tests verifican el código; no existe validación del transiente contra mediciones. El caudal se aproxima como ideal para las tres EOS, sin estimar un error porcentual no medido.
 
 Las salidas nuevas están en `Datos/correcciones` y `Graficos/correcciones`; las previas no se sobrescriben. La suite incorpora **9** pruebas adicionales (3 por EOS), además de las 25 originales.
+
+> **Código canónico:** esta es la única copia del programa final en la rama principal. Las nuevas salidas se guardan por defecto en `codigo/resultados/` (ignorada en Git), mientras que los resultados publicados están en [`../resultados/`](../resultados/).

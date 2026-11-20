@@ -113,3 +113,14 @@ pip install -r requirements.txt
 ```
 
 Las animaciones MP4 requieren **FFmpeg**. En este portafolio se conservaron los archivos reales del proyecto —código, datos, reportes, figuras, animaciones e informe— para que el trabajo pueda revisarse de forma completa.
+
+## Proyecto final corregido y artículo científico (noviembre de 2026)
+
+Además de las versiones históricas V1–V3, este repositorio contiene la entrega final ampliada:
+
+- [Proyecto_Final_Corregido](Proyecto_Final_Corregido/): código, pruebas, documentación, validación, resultados, gráficos, presentación y animación.
+- [Articulo_Cientifico_USM](Articulo_Cientifico_USM/): manuscrito universitario, fuentes LaTeX, bibliografía, datos y gráficos.
+
+Los archivos multimedia grandes (Presentacion_Final.pdf, Presentacion_Final.pptx y la animación MP4) están conservados como fragmentos binarios dentro de directorios .parts. Para reconstruirlos sin pérdida, ejecutar `python reconstruir_multimedia.py` desde esta carpeta; se verifica SHA-256 y tamaño.
+
+Los parámetros térmicos y de conexión son valores de estudio; las verificaciones numéricas no sustituyen una validación experimental.

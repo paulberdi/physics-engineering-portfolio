@@ -1,0 +1,505 @@
+\documentclass[11pt,letterpaper]{article}
+% Formato institucional adaptado del proyecto FIS190 del usuario.
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english,spanish,es-nodecimaldot,es-tabla]{babel}
+\usepackage{lmodern}
+\usepackage[top=2.0cm,bottom=3.0cm,left=2.0cm,right=2.0cm]{geometry}
+\usepackage{fancyhdr,multicol,float,graphicx}
+\usepackage{amsmath,amssymb,amsfonts,mathtools,bm}
+\usepackage{booktabs,tabularx,array,multirow,caption,subcaption,adjustbox}
+\usepackage{natbib,siunitx,enumitem,microtype,xcolor,hyperref,lastpage,placeins}
+\usepackage{tikz,listings}
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=blue,urlcolor=blue,
+ pdfauthor={Paul Berdichewsky; Benjamín Arancibia; Andrés Cerón},
+ pdftitle={Modelado termodinámico y verificación numérica del llenado transiente de un depósito rígido de nitrógeno}}
+\sisetup{output-decimal-marker={,},group-separator={\,},detect-all=true}
+\captionsetup{font=small,labelfont=bf,justification=raggedright,singlelinecheck=false}
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{0pt}
+\setlength{\columnsep}{15pt}
+\setlength{\headsep}{20pt}
+\setlength{\headheight}{65pt}
+\setlist[itemize]{leftmargin=5mm,itemsep=1pt,topsep=2pt}
+\setlist[enumerate]{leftmargin=6mm,itemsep=1pt,topsep=2pt}
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,frame=single}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\p}{\partial}
+\newcommand{\EOS}{\textsc{eos}}
+\newcommand{\PR}{\textsc{pr}}
+\newcommand{\VdW}{\textsc{vdw}}
+\newcommand{\fig}[4]{\begin{figure*}[!t]\centering\includegraphics[width=#1\textwidth,height=0.36\textheight,keepaspectratio]{figuras/#2}\caption{#3}\label{#4}\end{figure*}}
+\newcommand{\tabfile}[3]{\begin{table*}[!t]\centering\small\begin{adjustbox}{max width=\textwidth}\input{tablas/#1.tex}\end{adjustbox}\caption{#2}\label{#3}\end{table*}}
+% Encabezado institucional, con logo auténtico localizado en /Escritorio/usm/logo-usm.png
+\newcommand{\universidad}{Universidad Técnica Federico Santa María}
+\newcommand{\campus}{Campus Santiago San Joaquín}
+\newcommand{\asignatura}{ICF130 · Fundamentos de Termodinámica Aplicada}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyhead[L]{\vspace{12pt}\includegraphics[width=3.25cm]{logo-usm.png}}
+\fancyhead[R]{\vspace{14pt}\begin{minipage}[b]{0.49\textwidth}\raggedleft\small
+\universidad\\\campus\\\asignatura
+\end{minipage}}
+\fancyfoot[C]{\thepage}
+\newcommand{\titulo}{Modelado termodinámico y verificación numérica del llenado transiente de un depósito rígido de nitrógeno: comparación entre gas ideal, Van der Waals y Peng--Robinson}
+\newcommand{\integrantes}{Paul Berdichewsky$^1$, Benjamín Arancibia$^1$, Andrés Cerón$^1$}
+\newcommand{\filiacion}{$^1$Departamento de Física, Universidad Técnica Federico Santa María, Campus Santiago San Joaquín, Chile}
+\begin{document}
+\spanishplainpercent
+\makeatletter
+\twocolumn[\begin{@twocolumnfalse}
+\thispagestyle{fancy}
+\begin{center}
+\vspace*{2mm}
+{\Large\bfseries\titulo\par}
+\vspace{4mm}
+{\small\textit{Thermodynamic modeling and numerical verification of transient nitrogen filling in a rigid vessel}\par}
+\vspace{4mm}
+{\normalsize\textbf{Autores:} \integrantes\par}
+\vspace{2mm}
+{\footnotesize\filiacion\par}
+\vspace{2mm}
+\end{center}
+\begin{otherlanguage}{english}
+\begin{abstract}
+A lumped-parameter numerical model is developed and verified for nonstationary filling of a \SI{50}{\liter} rigid nitrogen vessel supplied at \SI{200}{bar} and \SI{300}{\kelvin}. Conservation of mass and energy is closed with ideal-gas, van der Waals and Peng--Robinson equations of state. Thermodynamically consistent internal energies, source enthalpies and heat capacities are derived from each equation of state using Maxwell relations. Three progressive models are considered: constant-rate adiabatic filling, pressure-dependent compressible inflow with choking, and conjugate lumped gas--wall--ambient heat transfer. Numerical integration relies on adaptive RK45 and terminal-event detection, while analytical benchmarks, balance quadrature and fixed-step RK4 convergence provide independent verification. At a target pressure of \SI{190}{bar}, gas--wall model filling times are 456.40, 440.75 and \SI{433.60}{s} for ideal, van der Waals and Peng--Robinson nitrogen; final gas temperatures are 385.32, 379.44 and \SI{378.59}{K}. A controlled pressure-matched comparison isolates the inflow restriction effect, yielding filling-time increases of 8.99--10.51\,\%. Supply-state and thermal sensitivity analyses are reported together with a thermophysical benchmark against a nitrogen reference equation via CoolProp/HEOS. The model remains computationally verified but experimentally unvalidated; its lumped thermal treatment, idealized nozzle flow and uncalibrated transfer parameters must be accounted for when interpreting its predictions.
+\end{abstract}
+\noindent\textbf{Keywords:} transient filling; rigid vessel; real gas; equation of state; Peng--Robinson; thermodynamic consistency; numerical verification.
+\end{otherlanguage}
+\vspace{5mm}
+\end{@twocolumnfalse}]
+\makeatother
+\section*{Resumen}
+Se desarrolla y verificaun modelo de parámetros concentrados para el llenado no estacionario de un depósito rígido de \SI{50}{\liter} con nitrógeno, alimentado por un suministro a \SI{200}{bar} y \SI{300}{\kelvin}. Las ecuaciones de conservación de masa y energía se cierran mediante tres ecuaciones de estado: gas ideal, Van der Waals y Peng--Robinson. Para conservar la consistencia termodinámica, la energía interna, la entalpía del suministro y la capacidad calorífica se derivan de cada ecuación de estado utilizando relaciones de Maxwell. El modelo se construye por etapas: caudal impuesto y llenado adiabático (V1), caudal compresible con transición estrangulado--subsónico (V2), y transferencia de calor gas--pared--ambiente con inercia térmica (V3). Se integran las ecuaciones diferenciales con RK45 adaptativo y detección de eventos; se contrasta una solución analítica, se verifica la conservación mediante cuadratura independiente y se estima el orden de convergencia de RK4 de paso fijo. A \SI{190}{bar}, V3 predice tiempos de llenado de 456,40, 440,75 y \SI{433,60}{s} para los modelos ideal, Van der Waals y Peng--Robinson, respectivamente. En el mismo orden se obtienen temperaturas finales de 385,32, 379,44 y \SI{378,59}{K}. Una comparación de V1 y V2 a igual presión identifica de forma controlada el efecto exclusivo de la restricción de caudal, que aumenta el tiempo de llenado entre 8,99 y 10,51\,\% para \SI{190}{bar}. Se exploran las condiciones de suministro, las conductancias térmicas y la capacidad de pared, y se contrasta la densidad predicha con una ecuación de referencia implementada mediante CoolProp/HEOS. La concordancia numérica no constituye validación experimental: la formulación 0D, el caudal idealizado y los parámetros térmicos no calibrados limitan la extrapolación del modelo.
+
+\noindent\textbf{Palabras clave:} llenado transiente; depósito rígido; gas real; Peng--Robinson; Van der Waals; ecuaciones diferenciales ordinarias; conservación de energía; verificación numérica.
+\par\smallskip
+{\footnotesize\textit{Manuscrito computacional sin validación experimental; versión del 20 de noviembre de 2026.}}
+\par\medskip
+\section{Introducción}
+La carga rápida de depósitos de gas comprimido es un proceso abierto y transiente: simultáneamente aumentan la masa almacenada, la presión y, en condiciones adiabáticas, la temperatura. Aunque la corriente proceda de un suministro a temperatura ambiente, el contenido puede calentarse notablemente porque la energía transportada por el fluido entrante es su \emph{entalpía} de remanso, no solamente su energía interna. La distinción entre calor y transporte de energía con masa es esencial para interpretar el fenómeno.
+
+Una segunda dificultad aparece cuando el gas se comprime a presiones del orden de decenas o centenas de bar. La aproximación ideal deja de reproducir necesariamente el factor de compresibilidad, la densidad y las energías residuales; cambiar únicamente la relación presión--volumen y mantener las expresiones energéticas del gas ideal genera un modelo termodinámicamente inconsistente. Esta investigación compara deliberadamente tres niveles de descripción: ideal, Van der Waals y Peng--Robinson \citep{Peng1976}. La ecuación multiparamétrica de Span y colaboradores proporciona un contraste de propiedades para nitrógeno \citep{Span2000}.
+
+El objetivo es \textbf{determinar cómo la ecuación de estado, la dinámica del caudal y el intercambio térmico modifican las trayectorias y el tiempo necesario para alcanzar una presión dada}, separando los efectos mediante experimentos controlados. El trabajo incluye además condiciones alternativas del suministro y verificaciones numéricas reproducibles, en consonancia con los requisitos de modelado físico y computacional del Tema 7 del curso ICF130 \citep{ICF130}.
+
+Las principales aportaciones del estudio son: (i) formulación energética consistente para tres EOS; (ii) jerarquía de modelos 0D que permite apagar interacciones físicas; (iii) comparación V1--V2 con presión final coincidente para evitar confundimientos; (iv) verificación de convergencia y de balances independientes del integrador; (v) sensibilidad tanto a conductancias como a capacidad térmica efectiva de pared; y (vi) diferenciación explícita entre verificación numérica, contraste de propiedades y validación del proceso real. Se trata de un \textit{estudio de modelación}, no de un experimento físico ni de una predicción certificada de seguridad de recipientes presurizados.
+
+\section{Sistema físico, variables e hipótesis}
+\subsection{Volumen de control y estados}
+Se estudia un depósito rígido de volumen fijo $V$, provisto de una sola entrada y sin salida, con nitrógeno puro. En el interior se supone mezcla perfecta y uniformidad de presión y temperatura en cada instante: $P=P(t)$, $T_g=T_g(t)$, $m=m(t)$. En la versión térmicamente acoplada se añade una temperatura uniforme de pared $T_w(t)$ y un ambiente a $T_\infty$ constante. El modelo es, por tanto, de dimensión espacial \emph{cero} (0D): no resuelve temperaturas locales, chorros, turbulencia ni conducción espacial.
+
+Las condiciones del suministro se interpretan como condiciones de \emph{remanso} $P_s$ y $T_s$, constantes durante cada ensayo; de este modo la entalpía que cruza la superficie de control puede referirse directamente al suministro, con la correspondiente energía cinética total incluida. La energía potencial y la energía cinética almacenadas en el depósito se desprecian; no hay trabajo de eje y el trabajo de frontera es nulo por rigidez. El proceso de mezcla y disipación no es reversible aunque se utilice una relación isentrópica idealizada para el elemento de alimentación.
+
+\begin{table*}[!t]\centering\small
+\begin{tabular}{lll}\toprule
+Magnitud & Valor base & Naturaleza \\\midrule
+Volumen $V$ & $0,050\,\mathrm{m^3}$ & supuesto geométrico \\
+Estado inicial $(P_0,T_0)$ & $(1\,\mathrm{bar},300\,\mathrm K)$ & condición inicial \\
+Suministro $(P_s,T_s)$ & $(200\,\mathrm{bar},300\,\mathrm K)$ & condición de contorno \\
+Presión objetivo $P_{\rm obj}$ & V1: 100; V2--V3: 190 bar & convención histórica \\
+Caudal V1 & $0,020\,\mathrm{kg/s}$ & impuesto \\
+Coeficiente de descarga $C_d$ & $0,8$ & parámetro de estudio \\
+Área nominal $A$ & $5,4475\times10^{-7}\,\mathrm{m^2}$ & calibrada \\
+$UA_{gw}$, $UA_{wa}$ & $8$, $3\,\mathrm{W/K}$ & no medidos \\
+$m_w^*$, $c_w$ & $8\,\mathrm{kg}$, $500\,\mathrm{J/(kg\,K)}$ & capacidad térmica efectiva \\
+$T_\infty$ & $300\,\mathrm K$ & contorno térmico \\
+$R$ & $296,803\,\mathrm{J/(kg\,K)}$ & nitrógeno \\
+$c_{v,\mathrm{ig}}$, $c_{p,\mathrm{ig}}$ & $742,197$, $1039\,\mathrm{J/(kg\,K)}$ & referencia ideal a 300 K \\
+$T_c$, $P_c$, $\omega$ & $126,192\,\mathrm K$, $3,3958\,\mathrm{MPa}$, $0,0372$ & parámetros EOS \\\bottomrule
+\end{tabular}\caption{Condiciones y parámetros nominales. $UA$, $C_dA$ y $m_w^*$ no provienen de una calibración experimental. El calor específico de acero 304 a temperatura ambiente está documentado por Outokumpu \citep{Outokumpu}; el resto de los valores de pared son hipótesis de estudio.}\label{tab:parametros}
+\end{table*}
+
+Las propiedades ideales se fijan alrededor de \SI{300}{K} con apoyo de las expresiones de capacidad calorífica del NIST Chemistry WebBook \citep{NIST2026}. En todas las EOS se emplea el mismo fondo calorífico ideal, mientras que las EOS reales incorporan correcciones residuales. La temperatura de las trayectorias estudiadas se mantiene por encima de $T_c$, por lo que no se modela coexistencia líquido--vapor en el dominio considerado.
+
+\subsection{Convenciones y unidades}
+$m$ denota masa almacenada [kg], $\dot m$ flujo másico de entrada [kg/s], $v=V/m$ volumen específico [m$^3$/kg], $u$ y $h$ energía interna y entalpía específicas [J/kg], $U_g=mu$ energía interna total del gas [J] y $Z=Pv/(RT_g)$ factor de compresibilidad. Los flujos de calor $\dot Q_{gw}=UA_{gw}(T_g-T_w)$ y $\dot Q_{wa}=UA_{wa}(T_w-T_\infty)$ son positivos cuando la energía fluye del gas a la pared y de la pared al ambiente. Todas las presiones en el programa son absolutas; las unidades de integración son SI.
+
+\section{Formulación termodinámica}
+\subsection{Balance de masa y primera ley}
+Para el volumen de control de una sola entrada:
+\begin{equation}\boxed{\frac{\dd m}{\dd t}=\dot m(P,P_s,T_s).}\label{eq:masa}\end{equation}
+En ausencia de energía potencial relevante, trabajo de eje y trabajo volumétrico de frontera, la primera ley para el gas almacenado es:
+\begin{equation}\boxed{\frac{\dd U_g}{\dd t}=\dot m h_s-\dot Q_{gw},\qquad U_g=m\,u(T_g,V/m).}\label{eq:primera}\end{equation}
+En V1 y V2 se adopta $\dot Q_{gw}=0$. La entalpía de remanso $h_s=u_s+P_sv_s$ incluye el trabajo de flujo. Esta es la razón por la que el gas puede calentarse durante el llenado sin recibir calor externo: \emph{la energía se transporta con la masa entrante}, no mediante $\dot Q$. Para gas ideal, $h_s=c_{p,\mathrm{ig}}T_s$ y $u=c_{v,\mathrm{ig}}T_g$.
+
+\subsection{Acoplamiento térmico de la pared}
+El modelo de pared concentrada, incluido únicamente en V3, se expresa como
+\begin{align}
+\dot Q_{gw} &= UA_{gw}(T_g-T_w),\\
+\dot Q_{wa} &= UA_{wa}(T_w-T_\infty),\\
+C_w\frac{\dd T_w}{\dd t}&=\dot Q_{gw}-\dot Q_{wa},\qquad C_w=m_w^*c_w.\label{eq:pared}
+\end{align}
+El coeficiente $UA$ integra en un único parámetro la resistencia térmica global y el área; no es una conductividad espacial. $m_w^*$ representa aquí \emph{masa térmica efectiva} y no se afirma que coincida con la masa estructural completa del recipiente. Al sumar los balances de gas y pared desaparece la transferencia interna $\dot Q_{gw}$:
+\begin{equation}
+\frac{\dd}{\dd t}(U_g+C_wT_w)=\dot m h_s-\dot Q_{wa}.\label{eq:global}
+\end{equation}
+La elección del cero de energía de pared no afecta esta igualdad, utilizada como prueba de conservación.
+
+\subsection{Consistencia termodinámica para gases reales}
+La relación fundamental $\dd u=T\dd s-P\dd v$ y la identidad de Maxwell $(\partial s/\partial v)_T=(\partial P/\partial T)_v$ conducen a
+\begin{equation}
+\boxed{\left(\frac{\partial u}{\partial v}\right)_T=T\left(\frac{\partial P}{\partial T}\right)_v-P\equiv u_v.}\label{eq:maxwell}
+\end{equation}
+Por lo tanto, conocida la EOS $P(T,v)$, la dependencia de $u$ con $v$ \emph{no puede elegirse arbitrariamente}. Con la condición de dilución $u\to c_{v,\mathrm{ig}}T$ cuando $v\to\infty$:
+\begin{equation}
+u(T,v)=c_{v,\mathrm{ig}}T+\int_{\infty}^{v}\left[T\left(\frac{\partial P}{\partial T}\right)_{v'}-P(T,v')\right]\dd v'.\label{eq:ures}
+\end{equation}
+Se define $c_v=(\partial u/\partial T)_v$, que es constante solamente para el gas ideal y para VdW en la parametrización aquí adoptada. En Peng--Robinson, el término residual también modifica $c_v$.
+
+\subsection{Ecuación de evolución de temperatura}
+Aplicando la regla de la cadena a $U_g=mu(T_g,v)$ con $v=V/m$:
+\begin{align}
+\frac{\dd U_g}{\dd t}&=u\dot m+m c_v\dot T_g+m u_v\dot v,\\
+\dot v&=-\frac{v}{m}\dot m.
+\end{align}
+Sustituyendo en \eqref{eq:primera} se obtiene la ecuación general integrada:
+\begin{equation}
+\boxed{\frac{\dd T_g}{\dd t}=\frac{\dot m\,[h_s-u(T_g,v)+v u_v(T_g,v)]-\dot Q_{gw}}{m c_v(T_g,v)}.}\label{eq:Tgeneral}
+\end{equation}
+Las EDO efectivamente integradas son $\dot m$ y $\dot T_g$ en V1--V2, y $\dot m$, $\dot T_g$ y $\dot T_w$ en V3. La presión se evalúa mediante la EOS a partir de $m$ y $T_g$; las raíces implícitas son necesarias para convertir estados definidos por $(P,T)$ en su volumen específico y para una formulación alternativa conservativa en $(m,U_g)$.
+
+\section{Ecuaciones de estado y propiedades derivadas}
+\subsection{Gas ideal}
+Con $P=RT/v$ se cumple $u_v=0$ y
+\begin{equation}\begin{aligned}
+u_{\mathrm{ig}}&=c_{v,\mathrm{ig}}T,\\
+h_{\mathrm{ig}}&=c_{p,\mathrm{ig}}T,\\
+c_p&=c_v+R,\quad\gamma=\frac{c_p}{c_v}=1,39990.
+\end{aligned}\label{eq:ideal}\end{equation}
+El modelo proporciona un límite exacto contra el que verificar los modelos de gas real y permite deducir una solución analítica de V1.
+
+\subsection{Van der Waals}
+En base másica:
+\begin{equation}\begin{aligned}
+P(T,v)&=\frac{RT}{v-b}-\frac{a}{v^2},\\
+a&=\frac{27R^2T_c^2}{64P_c},\quad
+b=\frac{RT_c}{8P_c}.
+\end{aligned}\label{eq:vdw}\end{equation}
+La derivada energética viene dada por $u_v=a/v^2$ y la integral \eqref{eq:ures} entrega
+\begin{equation}\begin{aligned}
+u_{\mathrm{vdw}}&=c_{v,\mathrm{ig}}T-\frac{a}{v},\\
+h_{\mathrm{vdw}}&=u_{\mathrm{vdw}}+Pv,\\
+c_{v,\mathrm{vdw}}&=c_{v,\mathrm{ig}}.
+\end{aligned}\label{eq:uvdw}\end{equation}
+El reemplazo en \eqref{eq:Tgeneral} genera, en el numerador energético, la corrección $2a/v=2am/V$. Esta contribución corresponde al acoplamiento entre atracción molecular y el cambio de volumen específico inducido por el ingreso de masa. El límite formal $a=b=0$ recupera el gas ideal.
+
+\subsection{Peng--Robinson}
+Se adopta la ecuación cúbica de \citet{Peng1976} en variables másicas:
+\begin{align}
+P(T,v)&=\frac{RT}{v-b}-\frac{a(T)}{v^2+2bv-b^2},\label{eq:pr}\\
+a(T)&=a_c\left[1+\kappa(1-\sqrt{T/T_c})\right]^2,\nonumber\\
+a_c&=0,45724\frac{R^2T_c^2}{P_c},\nonumber\\
+b&=0,07780\frac{RT_c}{P_c},\nonumber\\
+\kappa&=0,37464+1,54226\omega-0,26992\omega^2.\nonumber
+\end{align}
+Escribiendo $D=v^2+2bv-b^2$ y $a'=\dd a/\dd T$, la identidad de Maxwell implica
+\begin{equation}
+u_v=\frac{a-Ta'}{D}.\label{eq:pruv}
+\end{equation}
+La primitiva $I(v)$ se define mediante
+\begin{align}
+I(v)&=\frac{1}{2\sqrt 2\,b}\ln\left[\frac{v+(1+\sqrt 2)b}{v+(1-\sqrt 2)b}\right],\label{eq:Iv}\\
+\frac{\dd I}{\dd v}&=-\frac{1}{D},\quad I(\infty)=0.\nonumber
+\end{align}
+Por integración termodinámica se obtiene
+\begin{align}
+u_{\PR}&=c_{v,\mathrm{ig}}T+(Ta'-a)I(v),\\
+h_{\PR}&=u_{\PR}+Pv,\\
+c_{v,\PR}&=c_{v,\mathrm{ig}}+Ta''I(v).\label{eq:pru}
+\end{align}
+La presencia de $a(T)$ obliga a evaluar sus derivadas primera y segunda; asignar $u=c_{v,\mathrm{ig}}T$ a la EOS de PR introduciría una discordancia termodinámica. Las tres EOS comparten la misma referencia de dilución, por lo que las diferencias de entalpía del suministro son comparables sin depender de una constante aditiva arbitraria.
+
+\section{Dinámica de entrada y modelos jerárquicos}
+\subsection{V1: flujo impuesto y llenado adiabático}
+Se toma $\dot m=\dot m_0=0,020$ kg/s. Para gas ideal, la primera ley reduce a $\dd(mT_g)/\dd m=\gamma T_s$; por integración:
+\begin{equation}
+\boxed{\begin{aligned}T_g(m)&=\gamma T_s+\frac{m_0}{m}(T_0-\gamma T_s),\\m&=m_0+\dot m_0t.\end{aligned}}\label{eq:exacta}
+\end{equation}
+La presión ideal satisface $P(t)=P_0+(R\gamma T_s\dot m_0/V)t$, y el tiempo de llenado hasta $P_f$ es
+\begin{equation}
+t_f^{\mathrm{V1,ig}}=\frac{(P_f-P_0)V}{R\gamma T_s\dot m_0}.\label{eq:exactat}
+\end{equation}
+A $P_f=100$ bar, esta expresión da $t_f=198,559$ s, y en el límite $m\gg m_0$ se obtiene $T_g\to\gamma T_s\simeq 419,97$ K. Estos resultados son pruebas analíticas de la implementación.
+
+\subsection{V2: flujo compresible idealizado}
+La conexión se representa por una restricción equivalente de sección nominal $A$ y coeficiente de descarga $C_d$, tratada como flujo isentrópico de gas ideal entre estado de remanso y contrapresión del depósito \citep{NASA}. Definiendo $r=P/P_s$, la razón crítica
+\begin{equation}
+r_*=\left(\frac{2}{\gamma+1}\right)^{\gamma/(\gamma-1)}\simeq0,5283\label{eq:crit}
+\end{equation}
+divide las ramas de caudal. Para $0<r\le r_*$:
+\begin{equation}
+\dot m_*=C_dA\frac{P_s}{\sqrt{RT_s}}\sqrt\gamma\left(\frac{2}{\gamma+1}\right)^{\frac{\gamma+1}{2(\gamma-1)}}.\label{eq:choked}
+\end{equation}
+Para $r_*<r<1$:
+\begin{equation}
+\dot m=C_dA\frac{P_s}{\sqrt{RT_s}}\sqrt{\frac{2\gamma}{\gamma-1}\left(r^{2/\gamma}-r^{(\gamma+1)/\gamma}\right)}.\label{eq:sub}
+\end{equation}
+Se impone $\dot m=0$ cuando $r\ge1$, dominio que no se alcanza durante el llenado con $P_{\rm obj}<P_s$. El producto $C_dA=4,3580\times10^{-7}\,\mathrm{m^2}$ se fija para que la rama estrangulada dé 20 g/s a $P_s=200$ bar y $T_s=300$ K, y se mantiene constante en todas las EOS y los barridos. En el caso base, la transición ocurre a $P_*\simeq 105,66$ bar. \emph{La conexión no es un modelo de gas real:} emplear la misma ley para todas las EOS aísla la influencia de las propiedades almacenadas y de la entalpía del suministro; es una hipótesis causal de comparación, no una simulación completamente realista de la válvula.
+
+\subsection{V3: acoplamiento gas--pared--ambiente}
+A la V2 se añaden las ecuaciones \eqref{eq:pared}. La transferencia gas--pared se activa por la diferencia de temperatura; la pared adquiere energía y la entrega al ambiente. Se hace variar $UA_{gw}$, $UA_{wa}$ y $C_w$ para examinar la sensibilidad. El límite $UA_{gw}=UA_{wa}=0$ reproduce V2. El modelo no resuelve el espesor de pared, la conducción radial ni la distribución espacial de los coeficientes convectivos.
+
+\subsection{Diseño de comparaciones verdaderamente controladas}
+Las simulaciones históricas de V1 se detienen a 100 bar y las de V2--V3 a 190 bar, por lo que \emph{no debe atribuirse el salto de tiempo V1--V2 únicamente al cambio de ley de caudal}. Se realizó una segunda serie que comparte presión objetivo entre V1 y V2, una vez para 100 bar y otra para 190 bar, y mantiene fijos $P_s$, $T_s$, EOS, $V$, condiciones iniciales y caudal estrangulado calibrado. Esta modificación no altera el conjunto histórico: agrega un experimento controlado que aísla el efecto de la restricción al atravesar la presión crítica.
+
+\section{Métodos numéricos, control de calidad y reproducibilidad}
+\subsection{Integración temporal y eventos}
+Se integra la dinámica mediante \texttt{scipy.integrate.}\allowbreak\texttt{solve\_ivp}, método explícito adaptativo RK45, con tolerancias \texttt{rtol=1e-9}, \texttt{atol=1e-11}, paso máximo de 0,5 s y un evento terminal definido por $P(t)-P_{\rm obj}=0$ con cruce ascendente \citep{Virtanen2020}. El evento evita que la comparación temporal dependa de una malla de salida arbitraria. La solución continua se evalúa al instante de cruce. Para estados definidos por $(P,T)$ en las EOS cúbicas se calculan raíces de volumen específico mediante Brent en el dominio físicamente admisible $v>b$ y con pendiente mecánicamente estable $(\partial P/\partial v)_T<0$.
+
+En cada evaluación el solver conoce $(m,T_g)$ y por tanto $v=V/m$; el cálculo directo $P=P(T_g,v)$ no exige una inversión implícita en cada paso. Esto satisface el cierre de estado del problema, aunque difiere operacionalmente de implementar una búsqueda de raíces a cada evaluación. Como comprobación independiente, se implementó una segunda formulación PR con variables conservativas $(m,U_g)$, que recupera $T_g$ mediante una inversión; ambas soluciones coinciden dentro de la tolerancia declarada.
+
+\subsection{Conservación y balances posteriores}
+En un intervalo $[0,t_f]$ los residuos independientes se definen por
+\begin{align}
+R_m&=m_f-m_0-\int_0^{t_f}\dot m\,\dd t,\\
+R_g&=U_{g,f}-U_{g,0}\nonumber\\&\quad-\int_0^{t_f}\dot m h_s\,\dd t+Q_{gw},\\
+R_w&=C_w(T_{w,f}-T_{w,0})\nonumber\\&\quad-Q_{gw}+Q_{wa},\\
+R_\Sigma&=(U_{g,f}-U_{g,0})\nonumber\\&\quad+C_w(T_{w,f}-T_{w,0})\nonumber\\&\quad-\int_0^{t_f}\dot m h_s\,\dd t+Q_{wa},\label{eq:resid}
+\end{align}
+con $Q_{gw}=\int_0^{t_f}\dot Q_{gw}\dd t$ y $Q_{wa}=\int_0^{t_f}\dot Q_{wa}\dd t$. Las integrales de tasa se recalculan usando cuadratura de Gauss--Legendre de ocho nodos por paso a partir de la solución almacenada: no se reutiliza sin más el acumulador del integrador. Los residuos se expresan también en forma relativa dividiendo por una escala de masa añadida o por suma de magnitudes de energía; se evita dividir por una contribución casi nula.
+
+\subsection{Convergencia y consistencia de límites}
+Se comprueba la solución exacta V1 ideal, la continuidad de $\dot m$ en $r_*$, los límites $a,b\to0$ y $UA\to0$, la estabilidad de la EOS, el balance integral y la equivalencia PR entre formulaciones. Como prueba del orden temporal se integra un caso suave con RK4 de paso fijo y se mide $p\simeq\log_2[e(h)/e(h/2)]$ a tiempo fijo, antes del cambio de régimen. El registro heredado del proyecto documenta 25 pruebas automáticas aprobadas; la versión corregida reporta nueve pruebas adicionales. Los archivos originales corresponden a una ejecución previa en Python 3.13.18, NumPy 2.3.3, SciPy 1.16.1, Matplotlib 3.10.6 y CoolProp 7.2.0. La verificación adicional de la versión corregida empleó un entorno diferente para las funciones base: no se confunde con una certificación independiente de todos los archivos ni con validación experimental.
+
+\subsection{Comparación de propiedades con la referencia HEOS}
+Se contrastan densidades y funciones residuales calculadas por las tres EOS con la implementación \texttt{HEOS::Nitrogen} de CoolProp \citep{Bell2014}, basada en una descripción multiparamétrica para nitrógeno de referencia, coherente con el trabajo de \citet{Span2000}. Se define
+\begin{align}
+e_\rho[\%]&=100\frac{\rho_{\EOS}-\rho_{\mathrm{HEOS}}}{\rho_{\mathrm{HEOS}}},\\
+e_{h^r}&=h_{\EOS}^r-h_{\mathrm{HEOS}}^r.\label{eq:errho}
+\end{align}
+Este contraste evalúa propiedades de equilibrio, \emph{no} los coeficientes de transferencia ni las historias dinámicas del depósito.
+
+\section{Resultados: trayectorias, tiempos y efectos controlados}
+\subsection{Resumen de los nueve escenarios base}
+\tabfile{base}{Estados finales obtenidos en los nueve escenarios históricos. Cada comparación \emph{dentro} de una etapa utiliza las mismas condiciones de suministro y la misma presión objetivo; V1, a diferencia de V2--V3, tiene objetivo de 100 bar. Los datos provienen de \texttt{casos\_base.csv}.}{tab:base}
+
+La tabla \ref{tab:base} resume tiempos, temperaturas, masa y compresibilidad. En V1, la temperatura final ideal ($418,30$ K) es considerablemente mayor que la de VdW ($387,92$ K) y PR ($389,49$ K). Las masas que permiten alcanzar 100 bar son, respectivamente, $4,027$, $4,323$ y $4,227$ kg. V2 alcanza 190 bar en $418,92$, $410,86$ y $404,88$ s y con temperaturas finales $419,09$, $403,67$ y $402,67$ K. V3 modifica de manera apreciable ambos resultados debido a la energía transferida a la pared.
+
+Para V3, la diferencia entre los modelos ideal y PR es
+\begin{align}
+\Delta t&=456,4012-433,6019=22,7993\,\mathrm{s},\\
+\frac{\Delta t}{t_{\mathrm{ideal}}}\,100&=4,995\,\%,\\
+\Delta T_f&=385,3234-378,5936=6,7298\,\mathrm{K},\\
+\Delta m_f&=8,3067-7,9853=0,3215\,\mathrm{kg}.\label{eq:delta}
+\end{align}
+\emph{Estos porcentajes son diferencias entre predicciones del modelo, no errores de medición}. La compresibilidad a 190 bar alcanza $Z_f=1,059$ para PR y $1,037$ para VdW; para gas ideal vale por definición uno.
+
+\fig{0.96}{01_v1_trayectorias.pdf}{V1: evolución de temperatura y presión durante llenado con caudal impuesto, tres EOS. Los eventos de presión objetivo marcan tiempos distintos para cada EOS.}{fig:v1}
+\fig{0.96}{04_v3_P_m_Z.pdf}{V3: evolución de presión, masa y factor de compresibilidad. Las trayectorias se interrumpen al alcanzar 190 bar.}{fig:pmz}
+
+\subsection{Cambio de régimen del caudal y comparación V1--V2}
+\fig{0.96}{02_v2_caudal.pdf}{Evolución del caudal compresible en V2 para la restricción calibrada. La transición idealizada estrangulado--subsónico ocurre al superar $P/P_s\simeq0,5283$.}{fig:caudal}
+\tabfile{control}{Experimento controlado con igual presión final y condiciones de suministro. Se compara V1 (20 g/s constante) y V2 (caudal compresible) manteniendo inalterada la EOS. La columna $\Delta t=t_{V2}-t_{V1}$. Redondeos cercanos a cero expresan coincidencia dentro de la precisión numérica.}{tab:control}
+
+La tabla \ref{tab:control} resuelve un confundimiento de la comparación histórica. Hasta 100 bar, el flujo permanece estrangulado, $\dot m=20$ g/s; por tanto V1 y V2 tienen la misma trayectoria de masa y temperatura para cada EOS y muestran tiempos numéricamente indistinguibles. A 190 bar, V2 tarda $39,85$ s adicionales en gas ideal (10,51\,\% respecto de V1), $33,90$ s en VdW (8,99\,\%) y $34,14$ s en PR (9,21\,\%). Las temperaturas y masas finales permanecen iguales en V1 y V2 cuando se comparan a igual $P_f$, porque la variación de $\dot m(P)$ altera el reloj pero no la relación adiabática entre las variables de estado bajo estas hipótesis.
+
+\fig{0.91}{05_control_V1_V2.pdf}{Comparación a presión final igualada: el impacto del caudal dependiente de la contrapresión queda aislado del cambio de presión objetivo.}{fig:control}
+
+Este comportamiento es una consecuencia estructural del problema adiabático sin dependencia explícita del tiempo: de \eqref{eq:Tgeneral} y \eqref{eq:masa}, para $\dot m>0$, se obtiene $\dd T/\dd m=[h_s-u+v u_v]/(m c_v)$, independiente de la forma temporal de $\dot m$. No se generaliza sin cambios a V3, donde $\dot Q_{gw}/\dot m$ introduce el acoplamiento térmico con el tiempo.
+
+\subsection{Efecto de la pared sobre temperaturas y energías}
+\fig{0.97}{03_v3_temperaturas.pdf}{Temperatura media del gas y de la pared durante V3. La temperatura inicial de ambos es 300 K. La pared almacena energía mientras el gas recibe entalpía por la entrada.}{fig:temperaturas}
+\tabfile{transferencias}{Balances térmicos acumulados de V3. $Q_{gw}$ representa la energía cedida por el gas a la pared, $Q_{wa}$ la evacuada al ambiente y $\Delta U_w=C_w(T_{w,f}-T_{w,0})$.}{tab:transferencias}
+
+En el caso ideal la pared recibe 208,60 kJ durante el llenado, entrega 34,65 kJ al ambiente y acumula $173,95$ kJ. El balance $208,60-34,65=173,95$ kJ coincide con la diferencia de energía de la pared. Para PR, las contribuciones respectivas son 161,79, 23,55 y 138,24 kJ. La escala térmica nominal de la pared, $\tau_w=C_w/(UA_{gw}+UA_{wa})=4000/11=363,6$ s, es comparable con el tiempo total de llenado, mientras que la respuesta inicial del gas es notablemente más rápida. Esta separación de escalas explica por qué la temperatura de la pared permanece por debajo de $T_g$.
+
+En la solución ideal V3, la temperatura del gas alcanza un máximo de $385,97$ K antes del evento y luego disminuye ligeramente hasta $385,32$ K. La caída de caudal en el régimen subsónico reduce el aporte entálpico en relación con las pérdidas térmicas hacia la pared; no implica que el gas haya dejado de recibir masa. Este máximo no se interpreta como una temperatura espacial ni como el punto más caliente del recipiente.
+
+\fig{0.94}{11_energia_pared.pdf}{Transferencia acumulada gas--pared, pérdida al ambiente y almacenamiento neto de energía de la pared.}{fig:paredenergia}
+
+\subsection{Sensibilidad a la conductancia gas--pared}
+\tabfile{ua}{Barrido de conductancia gas--pared $UA_{gw}$, manteniendo los otros parámetros nominales. La temperatura máxima y el tiempo de llenado se modifican aun cuando la presión objetivo permanece fija.}{tab:ua}
+\fig{0.96}{06_sensibilidad_UA.pdf}{Sensibilidad térmica y temporal a $UA_{gw}$. $UA_{gw}=0$ reproduce V2; valores crecientes representan mayor acoplamiento entre gas y pared.}{fig:ua}
+
+La tendencia es físicamente coherente: aumentar la conductancia térmica reduce la temperatura máxima del gas, pero suele aumentar el tiempo requerido para llegar a una presión objetivo. Por ejemplo, para gas ideal al aumentar $UA_{gw}$ de 0 a 16 W/K, $T_{g,\max}$ pasa de $419,09$ a $376,85$ K, una reducción de $42,24$ K, mientras el tiempo aumenta de $418,92$ a $466,26$ s, diferencia de $47,34$ s. La reducción de temperatura implica que se requiere acumular más masa para llegar a la misma presión; es una relación entre masa, temperatura y compresibilidad, no un cambio impuesto de caudal.
+
+\subsection{Sensibilidad a la masa térmica efectiva}
+\tabfile{pared}{Respuesta V3 para tres capacidades térmicas de pared, con $c_w=500$ J/(kg K), $UA_{gw}=8$ W/K y $UA_{wa}=3$ W/K. Los valores 8, 20 y 54 kg son escenarios paramétricos de \emph{masa térmica efectiva}, no masas verificadas de un recipiente específico.}{tab:pared}
+\fig{0.96}{07_masa_pared.pdf}{Sensibilidad al almacenamiento térmico de la pared. Una mayor capacidad térmica reduce el calentamiento de la pared durante el mismo proceso y modifica las temperaturas y los tiempos finales.}{fig:paredmass}
+
+El caso nominal $m_w^*=8$ kg supone $C_w=4000$ J/K. Al incrementar la masa térmica efectiva a 54 kg, $C_w=27000$ J/K. Bajo condiciones idénticas, el modelo ideal predice una reducción de $T_{g,f}$ desde 385,32 hasta 376,05 K y un alargamiento temporal de 456,40 a 469,11 s. Para PR, la temperatura final disminuye de 378,59 a 372,54 K y el tiempo aumenta de 433,60 a 442,31 s. En todos estos escenarios, la pared se mantiene más fría cuando su capacidad es mayor, sin que esto demuestre que una masa dada represente un recipiente real. La simulación hace explícita la dependencia de las predicciones respecto de $C_w$, que deberá medirse para un uso ingenieril cuantitativo.
+
+\subsection{Límite isotermo y comparación con el llenado adiabático}
+Para la cota idealizada $T_g(t)=T_0$, la ecuación de estado permite calcular $m(P,T_0)$ y el tiempo por integración de $\dd t=\dd m/\dot m(P)$. La energía que sería preciso extraer para mantener temperatura constante se obtiene del balance global integrado:
+\begin{equation}
+Q_{\mathrm{ext}}=(m_f-m_0)h_s-[U_g(m_f,T_0)-U_g(m_0,T_0)].\label{eq:isot}
+\end{equation}
+En un gas ideal con $T_s=T_0$:
+\begin{equation}
+Q_{\mathrm{ext}}=(m_f-m_0)(c_p-c_v)T_0=(m_f-m_0)RT_0.\label{eq:isotideal}
+\end{equation}
+\tabfile{isotermo}{Límites adiabático (V2) e isotermo a 300 K, hasta 190 bar, para cada EOS. El calor extraído es un requisito idealizado del proceso isotermo, no un resultado experimental.}{tab:isotermo}
+\fig{0.94}{12_isotermo_adiabatico.pdf}{Límites ideales de disipación térmica: la evolución V3 de pared finita se sitúa entre la aproximación adiabática y el límite isotermo idealizado en los casos considerados.}{fig:isot}
+
+En gas ideal se obtiene $t_{\rm iso}=586,45$ s y $m_{\rm iso}=10,669$ kg, frente a $418,92$ s y $7,637$ kg para V2. Las diferencias son 40,0\,\% en tiempo y 39,7\,\% en masa, aproximadamente. La extracción idealizada requerida es $945,0$ kJ. Este resultado clarifica por qué una menor temperatura no significa necesariamente un llenado más rápido cuando el criterio de parada es presión y no masa.
+
+\subsection{Efecto del suministro: la jerarquía entre EOS puede cambiar}
+\fig{0.96}{08_malla_suministro.pdf}{Barrido de 25 pares de estado de suministro (cinco presiones y cinco temperaturas) hasta 140 bar, manteniendo fija la conexión. Se presenta la diferencia de tiempo PR menos ideal.}{fig:suministro}
+
+Para explorar la robustez de las tendencias se fijó la presión objetivo común de 140 bar y se calcularon 25 combinaciones $P_s\in\{150,175,200,225,250\}$ bar y $T_s\in\{280,290,300,310,320\}$ K. El producto $C_dA$ se mantuvo inalterado; de otro modo el efecto del estado del suministro se mezclaría con una recalibración de la conexión. La diferencia $\Delta t_{\PR-\mathrm{ig}}=t_{\PR}-t_{\mathrm{ig}}$ es positiva en diez combinaciones y negativa en quince. El intervalo observado va de $-15,53$ a $+8,42$ s; por consiguiente, la afirmación «PR siempre llena más rápido» sería incorrecta. A 200 bar y 300 K, hasta 140 bar, se obtienen aproximadamente $t_{\PR}=304,14$ s y $t_{\mathrm{ig}}=304,86$ s, diferencia de $-0,72$ s.
+
+La competencia de mecanismos se entiende observando dos cambios simultáneos: (i) la EOS determina densidad, energía interna y presión del gas almacenado; (ii) la EOS también determina la entalpía de remanso del suministro. En el caso base, las entalpías usadas en la integración son $h_s=311,7$, $273,5$ y $275,4$ kJ/kg para ideal, VdW y PR. Menor entalpía de suministro tiende a producir un contenido menos caliente, mientras cambios en $Z$ alteran la masa necesaria para una presión prescrita. Una descomposición secuencial de ambos efectos puede ser ilustrativa, pero no única: su atribución cuantitativa depende del orden en que se sustituyan modelos acoplados.
+
+\subsection{Contraste de densidad y funciones residuales con HEOS}
+\tabfile{heos}{Comparación de propiedades a $P=200$ bar y $T=300$ K contra HEOS/CoolProp (referencia $\rho=212,537$ kg/m$^3$). El error de entalpía residual corresponde a la diferencia modelo menos referencia; no es un error relativo.}{tab:heos}
+\fig{0.95}{09_contraste_heos.pdf}{Desviaciones de propiedad de equilibrio respecto de la referencia HEOS para nitrógeno. Se compara densidad y no las trayectorias transientes del sistema.}{fig:heos}
+
+A 200 bar y 300 K, la densidad HEOS del registro es $212,537$ kg/m$^3$; gas ideal predice $224,616$ kg/m$^3$ (+5,68\,\%), Van der Waals $222,960$ (+4,90\,\%) y Peng--Robinson $218,552$ (+2,83\,\%). En este estado, PR es la más cercana en densidad de las tres EOS. No debe extrapolarse esa jerarquía a toda la región termodinámica sin examinar la malla completa. En entalpía residual, los errores correspondientes son $+32,31$, $-5,89$ y $-4,00$ kJ/kg: la predicción ideal es estructuralmente incapaz de capturar la parte residual por definición. La referencia HEOS no sustituye una medición de las temperaturas del recipiente.
+
+\section{Verificación cuantitativa y análisis de consistencia}
+\subsection{Solución conocida, límites y pruebas automáticas}
+La solución exacta de gas ideal V1 es un control fuerte porque fija simultáneamente masa, temperatura, presión y tiempo. En la corrida original, el máximo error de temperatura frente a esa solución fue $2,56\times10^{-6}$ K y la diferencia de tiempo $2,1\times10^{-12}$ s, según el registro de validación. Los límites $a=b=0$ para VdW, la reducción V3 a V2 con conductancias nulas y la equivalencia entre dos formulaciones de PR se verificaron en el conjunto original. La diferencia térmica informada entre las dos formulaciones PR fue $1,6\times10^{-6}$ K.
+
+Es importante subrayar que la comparación de resultados de una simulación con valores esperados codificados puede detectar regresiones del software, pero no es una prueba física independiente. La confianza numérica se apoya en el conjunto de comprobaciones heterogéneas: solución analítica, reducción de modelos, convergencia y balances integrales.
+
+\subsection{Orden de convergencia y tolerancias}
+\tabfile{rk}{Estudio de convergencia de RK4 a paso fijo en un estado suave de V3 anterior al cambio de régimen. Los errores disminuyen con orden observado próximo a cuatro.}{tab:rk}
+\fig{0.93}{10_convergencia.pdf}{Error temporal frente a refinamiento del paso RK4. La pendiente local converge hacia el orden teórico cuatro.}{fig:convergencia}
+
+Los valores de la tabla \ref{tab:rk} muestran un orden observado que se aproxima a 4,03 en el paso más fino. El estudio se realiza en un tramo suave, evitando interpretar una pérdida de regularidad en un cambio de régimen como defecto global del integrador. No se dispone de una estimación integral de incertidumbre de modelo a partir de esta convergencia: el error de discretización temporal y el error estructural de las hipótesis termodinámicas son magnitudes diferentes.
+
+\subsection{Residuos de conservación}
+La simulación informa un residuo relativo máximo del balance de energía global de $8,2\times10^{-12}$ en los nueve casos base; para un conjunto adicional de casos PR la cifra registrada permanece por debajo de $10^{-10}$. Estos valores son \emph{residuos internos de las ecuaciones implementadas}, no incertidumbres experimentales. En el balance V3, la identidad $Q_{gw}-Q_{wa}=\Delta U_w$ se comprueba tanto en la integración como mediante acumulados independientes.
+
+Los bajos residuos aportan evidencia contra fallos algebraicos o numéricos gruesos, pero una EOS físicamente inadecuada también puede respetar perfectamente la conservación de energía. Por eso la comparación con HEOS y, en un trabajo posterior, mediciones de presión y temperatura, deben tratarse como niveles distintos de evaluación.
+
+\section{Discusión física y metodológica}
+\subsection{Por qué la temperatura crece sin calor externo}
+En el volumen de control el gas recibe entalpía de la corriente, y el término $P_sv_s$ de esta magnitud incluye trabajo de flujo. A volumen fijo, la masa se acumula y la energía entrante eleva la energía interna; la solución analítica ideal lleva a $\gamma T_s\simeq420$ K en el límite de masa inicial pequeña. Decir que «el calentamiento viene del calor» sería erróneo para V1--V2: el proceso se modela adiabático y la energía atraviesa la frontera con la masa.
+
+\subsection{Por qué gas real más frío puede llegar antes a la presión objetivo}
+A presión, volumen y temperatura prescritos, $m=PV/(ZRT)$. Si dos EOS llegan a igual presión con distintas temperaturas y distintos factores $Z$, la masa final depende del producto $ZT$; no basta observar la temperatura. En V3, PR termina $6,73$ K por debajo del ideal pero almacena $0,3215$ kg menos de nitrógeno y alcanza la presión 22,80 s antes. La conjunción de mayor $Z$ y diferente entalpía de entrada, bajo una ley común de caudal, explica el sentido de estas diferencias en el caso nominal. Sin embargo, la variación de signo en la malla de suministro impide presentar esta relación como universal.
+
+\subsection{Qué representa la pared concentrada}
+La capacidad $C_w=m_w^*c_w$ es una inercia térmica \emph{efectiva}, no una identificación geométrica automática con la totalidad del acero. Cambiar $m_w^*$ manteniendo $UA$ constantes es una variación paramétrica matemática; en un cilindro físico, área, espesor, masa y conductancias pueden variar conjuntamente. El barrido de masa térmica cuantifica la sensibilidad del modelo, no permite escoger por sí solo una geometría certificada de tanque. La diferencia entre conductancia, resistencia térmica, masa almacenadora y difusión espacial debe mantenerse explícita.
+
+\subsection{Compatibilidad y límites de la conexión}
+La ley de tobera de gas ideal se utiliza con los tres modelos del recipiente. Esa mezcla de aproximaciones es controlada y útil para separar el impacto de las propiedades del gas almacenado y del suministro; no equivale a resolver un flujo real compresible a 200 bar. La compresibilidad y las propiedades entálpicas del fluido en la conexión podrían modificar el caudal y la transición de régimen. No se declara un porcentaje de ese error sin implementar y contrastar una ley de caudal real o realizar una calibración. Se omiten la dinámica de apertura de válvula, cambios de presión en la fuente y estratificación de temperatura, efectos potencialmente relevantes en llenado rápido.
+
+\subsection{Identificación de parámetros, seguridad y aplicabilidad}
+No se estimaron $C_dA$, $UA_{gw}$, $UA_{wa}$ ni $C_w$ a partir de datos experimentales del mismo recipiente. En consecuencia, los tiempos y temperaturas nominales corresponden a \emph{escenarios condicionales al conjunto de parámetros}. Las predicciones no deben emplearse como validación estructural, definición de límites de seguridad ni protocolo de carga a presión. Para avanzar hacia una aplicación real se requieren curvas experimentales de $P(t)$, $\dot m(t)$, temperaturas en varios puntos del gas y de la pared, geometría, composición y propiedades de válvula. Estas mediciones permitirían identificar parámetros, examinar si el gas se mezcla suficientemente rápido y cuantificar incertidumbres.
+
+\subsection{Fortalezas y cuestiones pendientes para una revista}
+El trabajo ya demuestra una cadena transparente que conecta ecuaciones, integración, pruebas y resultados. La formulación de propiedades residuales constituye una ventaja frente a comparar únicamente EOS de presión; el experimento controlado V1--V2 elimina una fuente concreta de confundimiento. No obstante, una eventual revista especializada podría exigir una contribución novedosa más delimitada respecto de la literatura, un estudio de incertidumbre de parámetros, un benchmark dinámico independiente o datos experimentales. El manuscrito debe considerarse \emph{candidato a evaluación editorial}, no evidencia de que cumpla por anticipado las exigencias de una publicación científica específica.
+
+\section{Conclusiones}
+\begin{enumerate}
+\item El llenado de un recipiente rígido sin transferencia de calor es capaz de elevar la temperatura del gas muy por encima de la del suministro: el mecanismo de aporte energético está correctamente representado mediante entalpía de remanso y balance abierto de energía.
+\item Comparar gases reales exige modificar de manera consistente las funciones de energía interna, entalpía y, en Peng--Robinson, la capacidad calorífica residual; la relación de Maxwell constituye el vínculo termodinámico entre la EOS y el balance energético.
+\item En el caso nominal V3 a 190 bar, los tiempos de llenado son $456,40$, $440,75$ y $433,60$ s para ideal, VdW y PR. Los valores finales de temperatura son $385,32$, $379,44$ y $378,59$ K, respectivamente. PR predice aproximadamente un 5,0\,\% menos tiempo y 6,73 K menos que el gas ideal en \emph{ese escenario}.
+\item Una comparación controlada a presión final igualada muestra que V1 y V2 coinciden a 100 bar, antes de abandonar el régimen estrangulado. A 190 bar, la restricción dinámica de caudal prolonga el llenado en 8,99--10,51\,\% respecto de un caudal fijo de 20 g/s, sin modificar el estado final del modelo adiabático.
+\item La pared absorbe energía y disminuye la temperatura del gas; conductancias y masa térmica efectiva influyen de manera significativa en tiempo y temperatura. La elección de sus parámetros no calibrados es una limitación fundamental para extrapolar los números a un depósito real.
+\item La diferencia temporal PR--ideal cambia de signo al modificar el suministro. A 200 bar y 300 K la densidad PR es la más cercana, entre las tres EOS probadas, a la referencia HEOS, pero ni ese contraste ni los residuos pequeños constituyen validación experimental de la dinámica de llenado.
+\item Los controles analíticos, de convergencia, de reducción de modelos y de conservación respaldan la implementación. La siguiente etapa para una publicación aplicada requiere datos experimentales, incertidumbre paramétrica y un modelo de caudal real si se pretende hacer afirmaciones cuantitativas de diseño.
+\end{enumerate}
+
+\section*{Declaraciones para transparencia editorial}
+\textbf{Disponibilidad de datos y código.} Los CSV, figuras y scripts del proyecto y de la ampliación corregida forman parte del paquete complementario incluido con este manuscrito. No se declara un repositorio público permanente ni un DOI de datos que no hayan sido registrados.
+
+\textbf{Financiación.} No consta información verificable sobre financiación externa; debe completarse antes de cualquier envío.
+
+\textbf{Conflictos de interés.} Declaración pendiente de confirmación personal por todos los autores.
+
+\textbf{Contribuciones de autor.} El reparto de tareas de exposición no demuestra contribuciones de investigación; se debe elaborar una declaración CRediT y obtener aprobación de los tres autores antes de cualquier envío.
+
+\textbf{Uso de herramientas de asistencia.} La redacción editorial y la organización de este borrador tuvieron apoyo de inteligencia artificial. La revisión final de todas las afirmaciones, ecuaciones, atribuciones y referencias compete a los autores humanos.
+
+\textbf{Ética.} La presente investigación es computacional y no contiene datos de personas ni experimentación con animales; la necesidad de otras autorizaciones depende de las políticas de la institución y de la revista elegida.
+
+\begin{thebibliography}{99}
+\bibitem[Peng y Robinson(1976)]{Peng1976} Peng, D.-Y. y Robinson, D. B. (1976). A new two-constant equation of state. \textit{Industrial \& Engineering Chemistry Fundamentals}, 15(1), 59--64. \href{https://doi.org/10.1021/i160057a011}{doi:10.1021/i160057a011}.
+\bibitem[Span et al.(2000)]{Span2000} Span, R., Lemmon, E. W., Jacobsen, R. T., Wagner, W. y Yokozeki, A. (2000). A reference equation of state for the thermodynamic properties of nitrogen for temperatures from 63.151 to 1000 K and pressures to 2200 MPa. \textit{Journal of Physical and Chemical Reference Data}, 29(6), 1361--1433. \href{https://doi.org/10.1063/1.1349047}{doi:10.1063/1.1349047}.
+\bibitem[Bell et al.(2014)]{Bell2014} Bell, I. H., Wronski, J., Quoilin, S. y Lemort, V. (2014). Pure and pseudo-pure fluid thermophysical property evaluation and the open-source thermophysical property library CoolProp. \textit{Industrial \& Engineering Chemistry Research}, 53(6), 2498--2508. \href{https://doi.org/10.1021/ie4033999}{doi:10.1021/ie4033999}.
+\bibitem[Virtanen et al.(2020)]{Virtanen2020} Virtanen, P. et al. (2020). SciPy 1.0: Fundamental algorithms for scientific computing in Python. \textit{Nature Methods}, 17, 261--272. \href{https://doi.org/10.1038/s41592-019-0686-2}{doi:10.1038/s41592-019-0686-2}.
+\bibitem[NIST(2026)]{NIST2026} National Institute of Standards and Technology (NIST). \textit{Chemistry WebBook, SRD 69: Nitrogen, gas-phase heat capacity (Shomate equation)}. Consulta noviembre de 2026. \url{https://webbook.nist.gov/cgi/cbook.cgi?ID=C7727379&Type=JANAFG}.
+\bibitem[NASA(2026)]{NASA} NASA Glenn Research Center. \textit{Mass Flow Rate Equations}. Recurso técnico institucional, consulta noviembre de 2026. \url{https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/mass-flow-rate-equations/}.
+\bibitem[Outokumpu(2026)]{Outokumpu} Outokumpu. \textit{Core Range Datasheet: Stainless Steels for Corrosive Environments}. Datos de acero 304/4301, consulta noviembre de 2026. \url{https://www.outokumpu.com/-/media/files/products/core/outokumpu-core-range-datasheet.pdf}.
+\bibitem[Palma y Díaz(2026)]{ICF130} Palma, S. y Díaz, I. (2026). \textit{Proyecto computacional: Descripción ampliada de los temas, Tema 7}. Fundamentos de Termodinámica Aplicada (ICF130), Universidad Técnica Federico Santa María, Chile. Documento docente del proyecto.
+\end{thebibliography}
+
+\clearpage
+\appendix
+\section{Apéndice A: derivaciones termodinámicas suplementarias}
+\subsection{Derivación detallada de la identidad energética}
+Partiendo de $\dd u=T\dd s-P\dd v$ y escribiendo $s=s(T,v)$:
+\begin{align}
+\dd s&=\left(\frac{\partial s}{\partial T}\right)_v\dd T+\left(\frac{\partial s}{\partial v}\right)_T\dd v,\\
+\left(\frac{\partial s}{\partial T}\right)_v&=\frac{c_v}{T},\quad \left(\frac{\partial s}{\partial v}\right)_T=\left(\frac{\partial P}{\partial T}\right)_v.
+\end{align}
+Sustituyendo:
+\begin{equation}\dd u=c_v\dd T+\left[T\left(\frac{\partial P}{\partial T}\right)_v-P\right]\dd v.\end{equation}
+La validez requiere un dominio termodinámico diferenciable y un cierre de propiedades coherente; es independiente de la elección del integrador temporal.
+
+\subsection{Primitiva residual de Peng--Robinson}
+Con $D(v)=v^2+2bv-b^2=[v+(1+\sqrt2)b][v+(1-\sqrt2)b]$ y $b>0$,
+\begin{align}
+\int\frac{\dd v}{D(v)}&=\frac{1}{2\sqrt2 b}\ln\left|\frac{v+(1-\sqrt2)b}{v+(1+\sqrt2)b}\right|+C,\\
+I(v)&=\frac{1}{2\sqrt2 b}\ln\frac{v+(1+\sqrt2)b}{v+(1-\sqrt2)b}.
+\end{align}
+$\dd I/\dd v=-1/D$ y $I(\infty)=0$; por \eqref{eq:pruv}, $\int_\infty^v u_v\dd v'=(Ta'-a)I(v)$. Diferenciando respecto de $T$ a $v$ fijo:
+\begin{equation}\left(\frac{\partial}{\partial T}\right)_v[(Ta'-a)I]=Ta''I,\end{equation}
+de donde se obtiene la corrección residual de $c_v$. En código es importante usar la misma parametrización másica para $R$, $a$, $b$ y $v$.
+
+\subsection{Derivadas de $a(T)$ en PR}
+Con $g(T)=1+\kappa(1-\sqrt{T/T_c})$ y $a=a_cg^2$:
+\begin{align}
+g'&=-\frac{\kappa}{2\sqrt{TT_c}},\qquad g''=-\frac{g'}{2T},\\
+a'&=2a_cgg',\qquad a''=2a_c\big[(g')^2+gg''\big].
+\end{align}
+Estas derivadas son las que entran en la energía residual y en la capacidad calorífica; tratarlas como constantes alteraría la solución de la EDO.
+
+\subsection{Derivación de caudal compresible}
+Para flujo ideal isentrópico de un gas con $c_p$ constante, entre remanso $(P_s,T_s)$ y una sección de presión $P$, se tiene $T_e/T_s=(P/P_s)^{(\gamma-1)/\gamma}$ y $c_e^2/2=c_p(T_s-T_e)$. Usando $\rho_e=P/(RT_e)$ y $\dot m=C_dA\rho_ec_e$ se obtiene \eqref{eq:sub}. El máximo respecto de $r$ se alcanza cuando $r=r_*$, y para valores menores se limita por la rama sónica \eqref{eq:choked}; en el modelo se aplica un empalme continuo.
+
+\subsection{Tiempo característico y no unicidad de las escalas}
+Para la pared de capacidad $C_w$ sometida a ambas conductancias, una linealización con temperaturas de gas y ambiente impuestas sugiere $\tau_w=C_w/(UA_{gw}+UA_{wa})$. Como $T_g(t)$ varía en realidad, no se trata de una constante de tiempo exacta de todo el sistema acoplado. La masa del gas crece y su capacidad térmica total $mc_v$ también cambia; por ello la respuesta transiente tiene más de una escala y una única exponencial global sería una simplificación engañosa.
+
+\section{Apéndice B: reproducción de las simulaciones}
+\subsection{Estructura del proyecto y comandos}
+El programa se distribuye en módulos de propiedades y balances (\texttt{base.py}, \texttt{peng\_robinson.py}), animación, sensibilidad y generación de figuras. El punto de entrada es \texttt{main.py}, las dependencias se fijan en \texttt{requirements.txt}, los parámetros nominales residen en un JSON y las pruebas en \texttt{pruebas/}. La versión corregida incorpora un módulo independiente de comparaciones controladas denominado \texttt{correcciones.py}. Los comandos principales son:
+\begin{lstlisting}
+python -m pip install -r requirements.txt
+python main.py --sin-video
+python main.py --caso V3 --eos pr
+python main.py --salida ../../02_RESULTADOS
+python -m pytest
+\end{lstlisting}
+El archivo MP4 se genera si FFmpeg está disponible. La animación es una representación de un sistema 0D (color uniforme proporcional a $T_g$), no un campo de flujo o de temperatura calculado por CFD. Los comandos y las versiones de dependencias deben comprobarse en el entorno de entrega. El script de generación de tablas de este manuscrito toma los números directamente de los CSV: no sustituye una nueva integración del problema.
+
+\subsection{Fuentes de cada conjunto de resultados}
+\begin{itemize}
+\item \texttt{casos\_base.csv}: nueve soluciones V1--V3 para las tres EOS.
+\item \texttt{V1\_*.csv}, \texttt{V2\_*.csv}, \texttt{V3\_*.csv}: trayectorias resueltas de presión, masa, temperatura y variables derivadas.
+\item \texttt{comparacion\_controlada\_V1\_V2.csv}: tiempos V1 y V2 a presión objetivo común de 100 y 190 bar.
+\item \texttt{sensibilidad\_masa\_pared.csv}: nueve casos parametrizados en $C_w$, todos con $UA$ fijo.
+\item \texttt{sensibilidad\_pared\_3EOS.csv}: barridos de $UA$ y capacidad de pared para las tres EOS.
+\item \texttt{V3\_malla\_suministro.csv}: combinaciones $P_s,T_s$ hasta 140 bar.
+\item \texttt{propiedades\_contra\_HEOS.csv}: malla de propiedades de equilibrio y errores de referencia.
+\item \texttt{V2\_limite\_isotermo.csv}: condición adiabática e isotérmica.
+\item \texttt{orden\_RK4\_paso\_fijo\_V3.csv} y \texttt{balances.csv}: convergencia y conservación.
+\end{itemize}
+
+\subsection{Precisión y trazabilidad de los datos}
+Los resultados textuales se redondean según su función: normalmente a 2 decimales para tiempos y temperaturas, 3 para masa y factor $Z$, conservando los CSV con precisión completa. Las diferencias porcentuales se calculan antes del redondeo. La cuantificación de errores de densidad se hace tomando HEOS como denominador y el error de entalpía residual se expresa en kJ/kg para evitar singularidades alrededor de cero. No se reportan intervalos de confianza estadística porque no se realizó muestreo de parámetros ni se dispone de datos experimentales con incertidumbre conocida.
+
+\clearpage
+\onecolumn
+\section{Apéndice C: matriz de hipótesis y rutas de mejora}
+\begin{table}[H]\centering\footnotesize
+\begin{tabularx}{\linewidth}{p{35mm}X X}\toprule
+Hipótesis & Consecuencia sobre la interpretación & Verificación/experimento futuro \\\midrule
+Gas perfectamente mezclado (0D) & Una sola $T_g$; no predice picos locales & Sensores axiales/radiales o CFD contrastada \\
+Suministro infinito & $P_s,T_s$ fijos; no modela despresurización de fuente & Balance del suministro y ensayos temporales \\
+Conexión ideal isentrópica & El caudal de gas real no se resuelve & Flujo real con propiedades termodinámicas y calibración de $C_dA$ \\
+$UA$ constante & No incorpora variación de convección con $T$, $P$ ni velocidad & Identificación experimental y coeficientes dependientes del estado \\
+Pared de temperatura uniforme & Ignora conducción radial y retrasos espaciales & Modelo 1D de pared, Biot y Fourier \\
+$c_{v,\mathrm{ig}}$ constante & Aproximación calorífica en rango finito & Integrar correlación ideal $c_v(T)$ de NIST \\
+EOS cúbicas & Aproximan equilibrio real con precisión variable & Comparar sistemáticamente propiedades con Span/HEOS \\
+Sin datos experimentales & No es validación del proceso de carga & Ensayo instrumentado con repetición y barras de error \\\bottomrule
+\end{tabularx}
+\caption{Supuestos que delimitan la validez del modelo y experimentos que permitirían aumentar su capacidad predictiva.}
+\end{table}
+
+\end{document}

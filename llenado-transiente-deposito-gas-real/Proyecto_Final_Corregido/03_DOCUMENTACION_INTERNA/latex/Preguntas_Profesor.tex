@@ -1,0 +1,192 @@
+\documentclass[11pt]{article}
+\input{estilo}
+\newcounter{preg}
+\newcommand{\pregunta}[3]{\stepcounter{preg}%
+\begin{tcolorbox}[colback=white,colframe=tinta!25,boxrule=0.5pt,sharp corners,left=6pt,right=6pt,top=4pt,bottom=4pt,breakable]
+\textbf{\color{tinta}\thepreg. #1}\par\smallskip
+\textbf{Respuesta oral:} #2\par\smallskip
+{\color{gris}\small\textbf{Para estudiar:} #3}
+\end{tcolorbox}}
+\title{\color{tinta}\textbf{Preguntas probables del profesor}\\[4pt]\large con respuesta oral corta y explicación para estudiar}
+\author{Material interno · ICF130 Tema 7}
+\date{Noviembre 2026}
+\begin{document}
+\maketitle
+Cada pregunta tiene una respuesta corta para decir en voz alta (15-30 s) y una explicación más profunda.
+Las cifras salen de la corrida final. Las preguntas 27 a 37 son las difíciles: hipótesis discutibles,
+errores típicos y discrepancias que el profesor podría detectar.
+
+\section{Problema y modelo}
+\pregunta{¿Por qué eligieron este problema?}
+{Es el Tema 7 y modela algo real: cargar cilindros de gas comprimido. Permite usar casi todo el curso:
+volumen de control, entalpía, Maxwell, ecuaciones de estado y estabilidad.}
+{El llenado de GNC, hidrógeno o aire de buceo está limitado por el calentamiento. El problema obliga a
+usar la primera ley para sistemas abiertos y a combinarla con una EOS real, que es el núcleo del curso.}
+
+\pregunta{¿Qué representa cada versión?}
+{V1 aísla la ecuación de estado con caudal fijo; V2 agrega que el caudal depende de la presión; V3
+agrega una pared que guarda calor y lo pierde al ambiente. Cada una cambia una sola cosa.}
+{Así una diferencia entre versiones se atribuye a una hipótesis. V1: 100 bar, 20 g/s. V2: flujo compresible
+estrangulado hasta 105,66 bar y luego subsónico. V3: $C_w=4000$ J/K, $UA_{gw}=8$, $UA_{wa}=3$ W/K.}
+
+\pregunta{¿Por qué un volumen de control y no un sistema cerrado?}
+{Porque entra masa. Un sistema cerrado tiene masa fija; aquí la masa del depósito crece todo el tiempo.}
+{Se podría usar un sistema cerrado que incluya la masa que va a entrar, pero habría que seguir su frontera
+móvil y calcular el trabajo que le hace el suministro: eso es justamente el trabajo de flujo, que el volumen
+de control incorpora automáticamente con la entalpía.}
+
+\pregunta{¿Por qué aparece la entalpía en el balance de energía?}
+{Porque cada kilo que entra trae su energía interna más el trabajo que se hace para empujarlo adentro, $Pv$.
+Esa suma es $h=u+Pv$.}
+{$\dd(mu)/\dd t=\md h_s-\Qgw$. En gas ideal $h_s-u_s=RT_s$: es la diferencia entre $c_pT_s$ y $c_vT_s$.
+Ese término es el que calienta el gas aunque no entre calor.}
+
+\pregunta{¿Cuál es la diferencia entre energía interna y entalpía?}
+{La energía interna es la que el gas tiene almacenada; la entalpía es la que transporta una corriente,
+porque suma el trabajo de flujo.}
+{El depósito almacena $U=mu$; la corriente aporta $h_s$. Para un sistema sin flujo la entalpía no tiene un
+significado especial; en un volumen de control aparece porque la presión hace trabajo en la frontera por donde cruza la masa.}
+
+\pregunta{¿Por qué el gas se calienta si entra a 27 °C y no entra calor?}
+{Porque la corriente empuja y comprime al gas que ya está adentro. Ese trabajo de flujo queda como energía interna.}
+{Con gas ideal y estanque casi vacío, $T\to\gamma T_s\approx420$ K. En V2 ideal se llega a 419 K (146 °C) a 190 bar.
+La entalpía que entra ($c_pT_s$) es mayor que la energía interna que tendría ese gas a $T_s$ ($c_vT_s$).}
+
+\pregunta{¿Por qué consideran trabajo de eje nulo? ¿Y el trabajo de frontera?}
+{No hay ninguna máquina dentro del depósito, así que no hay trabajo de eje. Y como es rígido, $P\,\dd V=0$.}
+{El único trabajo es el de flujo, que ya está en $h_s$. La energía cinética del chorro se incluye usando la
+entalpía de remanso del suministro y se disipa dentro del depósito.}
+
+\pregunta{¿Qué significa que el modelo sea 0D?}
+{Que en cada instante todo el gas tiene una sola presión y una sola temperatura. Calculamos promedios en el tiempo, no cómo varían en el espacio.}
+{Se asume mezcla perfecta. En estanques grandes o llenados muy rápidos hay estratificación y la temperatura
+local puede superar el promedio. Por eso la animación pinta el estanque de un solo color.}
+
+\section{Ecuaciones de estado}
+\pregunta{¿Por qué comparar ecuaciones de estado?}
+{A 190 bar el nitrógeno ya no se comporta como gas ideal: el error en densidad llega al 6 \% y en entalpía residual a 32 kJ/kg. Queríamos ver cuánto cambia eso el tiempo de llenado y la temperatura.}
+{Con la referencia de Span a 200 bar y 300 K: ideal $+5{,}68$ \%, VdW $+4{,}90$ \%, PR $+2{,}83$ \% en densidad.}
+
+\pregunta{¿Qué aporta Peng-Robinson frente a Van der Waals?}
+{Un término atractivo que depende de la temperatura y del factor acéntrico, y un denominador distinto. Representa mejor la densidad de gases reales.}
+{$a(T)=a_c[1+\kappa(1-\sqrt{T/T_c})]^2$, $\kappa(\omega)$ con $\omega=0{,}0372$. VdW solo usa $T_c$ y $P_c$ y su
+$Z_c=0{,}375$ es muy alto; PR da $Z_c=0{,}307$, más cerca del real ($\approx0{,}29$).}
+
+\pregunta{¿Cómo calcularon la energía interna con Peng-Robinson?}
+{Con la relación de Maxwell: la EOS define cómo cambia $u$ con el volumen. Integramos desde el gas diluido, donde vale el gas ideal.}
+{$u_v=T(\partial P/\partial T)_v-P=(a-Ta')/D$. Con $I(v)$ se obtiene $u=\cvi T+(Ta'-a)I$ y $c_v=\cvi+Ta''I$.
+Se verificó en 20 estados contra una cuadratura numérica independiente (error $10^{-11}$ J/kg).}
+
+\pregunta{¿Por qué no basta con cambiar la fórmula de la presión?}
+{Porque la energía interna también depende de la ecuación de estado. Si se cambia $P$ y se deja $u=c_vT$, el balance de energía queda inconsistente.}
+{Con VdW, $u=c_vT-a/v$. Ese término produce el $2am/V$ de la EDO de temperatura. Además $h_s$ del suministro cambia: 311,7 (ideal) frente a 275,4 kJ/kg (PR).}
+
+\pregunta{¿Cómo eligen la raíz de la ecuación de estado?}
+{Buscamos la densidad con el método de Brent en un intervalo entre cero y $1/b$, y comprobamos que $\partial P/\partial v$ sea negativa: es la rama estable.}
+{Como $T>T_c$ en todo el proyecto (280-420 K frente a 126 K), la raíz es única y no hay coexistencia de fases.
+El intervalo garantiza cambio de signo, así que Brent converge siempre.}
+
+\pregunta{¿Qué representa el factor $Z$?}
+{Cuánto se desvía el gas del ideal: $Z=Pv/RT$. Mayor que 1 significa que el gas es menos denso que el ideal a la misma $P$ y $T$.}
+{A baja presión domina la atracción ($Z<1$ en VdW); a alta presión domina el volumen propio. A 190 bar en V3: VdW 1,037, PR 1,059.}
+
+\section{Caudal, pared y método numérico}
+\pregunta{¿Qué significa flujo estrangulado?}
+{Que en la garganta de la conexión el gas alcanza la velocidad del sonido. Bajar más la presión del depósito no aumenta el caudal.}
+{Pasa mientras $P/P_s\le r^*=0{,}528$, o sea, hasta 105,66 bar. Después el flujo es subsónico y el caudal cae hasta 8,99 g/s al llegar a 190 bar.}
+
+\pregunta{¿Cómo se incorpora la transferencia de calor?}
+{Con conductancias globales: el gas cede $UA_{gw}(T_g-T_w)$ a la pared y la pared cede $UA_{wa}(T_w-T_\infty)$ al ambiente. La pared tiene su propia ecuación con capacidad $C_w$.}
+{$UA$ junta coeficiente de convección y área. Los valores son de estudio; por eso hicimos sensibilidad.
+$UA_{gw}$ es el dominante: de 0 a 16 W/K la $T_{max}$ ideal baja de 419 a 377 K.}
+
+\pregunta{¿Qué método numérico usaron y por qué?}
+{RK45 adaptativo de SciPy con tolerancias de $10^{-9}$ y $10^{-11}$, paso máximo 0,5 s, y un evento que para justo al llegar a la presión objetivo.}
+{RK45 controla el error comparando dos estimaciones (orden 4 y 5). El paso máximo resuelve el transiente
+inicial (1,8 s) y el cambio de régimen. Para invertir la EOS en estados $(P,T)$ se usa Brent.}
+
+\pregunta{¿Cómo determinan la estabilidad y la convergencia?}
+{Refinamos el paso y la tolerancia, comparamos con DOP853 de orden 8, y medimos el orden de RK4 de paso fijo: dio 4,03, lo que dice la teoría.}
+{El sistema no es rígido en estos parámetros (escalas 1,8 s y 364 s). Si se cambiaran mucho los parámetros
+convendría probar un método implícito. El orden se estima con $p=\log_2[e(h)/e(h/2)]$ a 180 s, antes de la transición.}
+
+\pregunta{¿Cómo verifican la conservación de la energía?}
+{Después de integrar, recalculamos las tasas y las integramos con otra cuadratura, independiente del integrador. El residuo del balance queda en $10^{-11}$ relativo.}
+{$R_\Sigma=\Delta U_g+\Delta U_w-\int\md h_s\dd t+Q_{wa}$. Ojo: un residuo pequeño prueba que resolvimos bien las ecuaciones, no que la EOS sea la correcta.}
+
+\pregunta{¿Por qué usan un evento y no un tiempo fijo?}
+{Porque lo que comparamos es llegar a una presión, no un instante. El evento ubica el cruce con la solución continua.}
+{Con una malla de 10 s y umbral el error en el tiempo sería de hasta 9,25 s; con interpolación lineal, 0,12 s; con el evento, del orden de la tolerancia.}
+
+\pregunta{¿Cómo comprobaron que el código está bien?}
+{Contra la solución exacta de V1, con límites conocidos ($a=b=0$ da el ideal, V3 sin pared da V2), con los balances y con una segunda formulación de PR. Hay 25 pruebas automáticas.}
+{Error frente a la solución exacta: $2{,}6\cdot10^{-6}$ K. Formulación en $(m,U)$ frente a la de temperatura: $1{,}6\cdot10^{-6}$ K.}
+
+\section{Resultados y visualización}
+\pregunta{¿Cómo se interpreta la animación?}
+{Cada estanque tiene el color de su temperatura media calculada; el anillo es la temperatura media de la pared. No es un mapa espacial: el modelo es 0D.}
+{Todo lo que aparece sale de las EDO: $T_g$, $T_w$, $P/P_{obj}$, $m$, $Z$, caudal y régimen. Antes había un mapa
+con un punto caliente en la entrada; se quitó porque era decorativo y al revés de la física.}
+
+\pregunta{¿Por qué las EOS reales terminan más frías?}
+{Porque el gas que entra trae menos energía: a 200 bar la atracción entre moléculas baja la entalpía del suministro.}
+{$h_s$: 311,7 kJ/kg ideal, 273,5 VdW, 275,4 PR (misma referencia). Span da $h$ residual $-32{,}3$ kJ/kg.}
+
+\pregunta{¿Por qué a 190 bar las EOS reales llenan antes si están más frías?}
+{Porque $m=PV/ZRT$ y a 190 bar $Z$ es mayor que 1. Ese aumento pesa más que la menor temperatura: se necesita menos masa.}
+{V3: PR 7,985 kg frente a 8,307 kg ideal; 433,6 s frente a 456,4 s. En V1, a 100 bar, $Z$ todavía es casi 1 y gana la menor $T$: las EOS reales necesitan más masa.}
+
+\pregunta{¿Qué limitaciones tiene el modelo?}
+{Es 0D, la conexión usa gas ideal para las tres EOS, los parámetros de la pared no están medidos y no hay experimento para validar.}
+{También: $\cvi$ constante, suministro infinito, apertura instantánea, una sola temperatura de pared.}
+
+\pregunta{¿Qué mejorarían con más tiempo?}
+{Calibrar la conexión y la pared con mediciones, usar un caudal con propiedades reales y un modelo 1D de conducción en la pared.}
+{Mediciones de $P(t)$, $\md(t)$, $T_g$ en varios puntos y $T_w$. Con eso se calibran $C_dA$ y $UA$ y se prueba la hipótesis de mezcla perfecta.}
+
+\section{Preguntas difíciles}
+\pregunta{Si usan Peng-Robinson en el estanque, ¿no es inconsistente usar gas ideal en la conexión?}
+{Es una decisión consciente: con la misma ley de caudal, a igual presión todas las EOS tienen igual caudal, y las diferencias vienen solo del estado del gas. Lo declaramos como hipótesis.}
+{Un caudal con propiedades reales cambiaría unos puntos porcentuales a 200 bar. Mezclar ese cambio con el de
+la EOS impediría atribuir los efectos. Sería una comparación aparte.}
+
+\pregunta{¿De dónde salen $UA_{gw}=8$ W/K y 8 kg de pared? ¿No están inventados?}
+{Son parámetros de estudio, no medidos; lo decimos explícitamente. Solo $c_w=500$ J/(kg K) viene de una ficha del acero 304. Por eso variamos $UA$ y $C_w$.}
+{Las conclusiones cualitativas (la pared enfría, alarga el llenado, $UA_{gw}$ domina) se mantienen en todo el rango y con las tres EOS.}
+
+\pregunta{¿Por qué $c_v$ constante si el gas va de 300 a 420 K?}
+{Porque en ese rango el $c_p$ ideal del nitrógeno varía menos de 1 \%. Y en Peng-Robinson el $c_v$ total sí depende del estado por la parte residual.}
+{Usar el mismo $\cvi$ en las tres EOS hace que las diferencias vengan de la EOS. Con Shomate se podría usar $\cvi(T)$; el efecto sería pequeño frente al de la EOS.}
+
+\pregunta{¿Por qué en V3 con gas ideal la temperatura baja al final?}
+{Porque el caudal ya cayó y la energía que entra no alcanza a compensar lo que el gas pierde a la pared.}
+{Máximo de 385,97 K a los 378 s y baja 0,65 K. En VdW y PR el gas sigue subiendo hasta el evento porque llega antes y pierde menos calor.}
+
+\pregunta{¿Cómo puede ser que el gas real termine más frío pero llegue antes? ¿No es contradictorio?}
+{No: la presión depende de $Z$, de $T$ y de $m$. A 190 bar el aumento de $Z$ compensa la menor $T$, así que con menos masa se llega a la misma presión.}
+{En la malla de suministro el signo PR $-$ ideal en tiempo cambia: depende de qué efecto domine.}
+
+\pregunta{A 200 bar y 300 K PR e ideal tardan casi lo mismo hasta 140 bar. ¿Entonces la EOS no importa?}
+{Sí importa: hay dos efectos de unos 26 s con signo opuesto. Cambiar el estanque a PR acorta 26,6 s y cambiar la entalpía de entrada alarga 25,9 s.}
+{El neto es $-0{,}72$ s. Esa separación depende del orden en que se hace porque todo está acoplado; por eso la llamamos descomposición secuencial.}
+
+\pregunta{¿Los residuos de $10^{-11}$ prueban que el modelo es correcto?}
+{No. Prueban que resolvemos bien nuestras ecuaciones. Una EOS equivocada también cierra el balance. La exactitud física la miramos contra Span, y para el estanque haría falta un experimento.}
+{Distinguir verificación (¿resolvemos bien las ecuaciones?) de validación (¿son las ecuaciones correctas?).}
+
+\pregunta{¿Por qué el error de densidad del gas ideal frente a Span es negativo a 50 bar y positivo a 200 bar?}
+{Porque a presión media domina la atracción y el gas real es más denso que el ideal; a alta presión domina el volumen propio y es menos denso.}
+{El signo del error sigue al de $Z-1$ de la referencia. Van der Waals exagera la atracción a presión media: a 300 K su error de densidad llega a cerca de 5 \% entre 150 y 200 bar.}
+
+\pregunta{En el avance la animación tenía un punto caliente en la entrada. ¿Por qué lo quitaron?}
+{Porque el modelo es 0D y no calcula un campo espacial; ese patrón era decorativo. Además estaba al revés: el gas que entra es el más frío.}
+{En llenados reales la zona cerca de la entrada es más fría y el calentamiento viene de la compresión del gas residente. La animación nueva solo muestra lo que se calcula.}
+
+\pregunta{¿Por qué el estado inicial es 1 bar y no vacío?}
+{Porque con masa cero la ecuación de temperatura divide por cero. 1 bar representa un estanque purgado con nitrógeno a presión ambiente.}
+{La masa inicial es 0,056 kg, frente a 4-8 kg finales: su efecto se pierde en los primeros segundos.}
+
+\pregunta{¿Qué pasa si el objetivo fuera 200 bar?}
+{No se alcanzaría en tiempo finito: el caudal tiende a cero cuando la presión del estanque se acerca a la del suministro. Por eso usamos 190 bar.}
+{El código rechaza $P_{obj}\ge P_s$ (prueba automática). Con 190 bar el caudal final todavía es 8,99 g/s.}
+\end{document}

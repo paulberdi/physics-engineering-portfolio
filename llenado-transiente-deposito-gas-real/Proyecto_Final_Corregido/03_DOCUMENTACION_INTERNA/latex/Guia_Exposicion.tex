@@ -1,0 +1,79 @@
+\documentclass[11pt]{article}
+\input{estilo}
+\title{\color{tinta}\textbf{Guía de exposición}\\[4pt]\large Presentación final · ICF130 Tema 7}
+\author{Material interno del grupo}
+\date{Noviembre 2026}
+\begin{document}
+\maketitle
+\section{Formato}
+\begin{itemize}
+\item 21 diapositivas (la 21 son referencias, no se expone). Duración objetivo: \textbf{18 a 20 minutos} más preguntas,
+a 1 minuto por diapositiva aprox. Si piden acortar a 12-15 min, ver la sección~\ref{sec:corto}.
+\item Las notas del presentador de cada diapositiva (en el .pptx, vista Moderador) tienen el texto oral sugerido.
+No leerlas: usarlas como guion de ideas.
+\item El video de la diapositiva 18 va incrustado en el .pptx (18 s). Si el proyector falla, abrir
+\texttt{02\_RESULTADOS/Animaciones\_MP4/ICF130\_V1\_V2\_V3\_tres\_EOS.mp4} directamente. El PDF muestra solo el último cuadro.
+\end{itemize}
+
+\section{División entre integrantes}
+\begin{center}\small
+\begin{tabular}{llll}\toprule
+Expositor & Diapositivas & Contenido & Tiempo\\\midrule
+Paul & 1-5 & Portada, problema, hipótesis, balances, etapas & 5-6 min\\
+Benjamín & 6-12 & EOS, energía, caudal, método, verificación, tabla, V3 & 7 min\\
+Andrés & 13-20 & EOS reales, pared, isotermo, suministro, Span, video, cierre & 7 min\\\bottomrule
+\end{tabular}\end{center}
+La división pone la física de base en Paul, la matemática y la numérica en Benjamín (lo más técnico, con la
+tabla de resultados como cierre de su parte) y la interpretación en Andrés.
+
+\section{Diapositiva por diapositiva: lo que no puede faltar}
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Portada (Paul).} Tema 7; un mismo modelo en tres etapas y con tres EOS.
+\item \textbf{Problema.} Entra a 27 °C y llega a 146 °C sin calor: el trabajo de flujo. Tres preguntas.
+\item \textbf{Modelo 0D.} Una sola $P$ y $T$; rígido, sin trabajo de eje; caso base. Los parámetros de pared son de estudio.
+\item \textbf{Balances.} Las tres ecuaciones; $h=u+Pv$; solución exacta $\gamma T_s\approx420$ K usada para verificar.
+\item \textbf{Etapas.} Un fenómeno por etapa; tres EOS en condiciones idénticas. \emph{Transición:} ``Benjamín explica cómo entran las ecuaciones de estado''.
+\item \textbf{EOS (Benjamín).} Qué corrige cada una; mismas constantes críticas y mismo $\cvi$.
+\item \textbf{Energía consistente.} Maxwell $\Rightarrow$ $u$ depende de la EOS; EDO de $T$; recupera $2am/V$ y el ideal.
+\item \textbf{Caudal.} Estrangulado hasta 106 bar; misma ley para las tres EOS (hipótesis declarada).
+\item \textbf{Método.} Brent en rama estable; RK45; evento; cuadratura independiente.
+\item \textbf{Verificación.} $2{,}6\cdot10^{-6}$ K, orden 4,03, residuo $<10^{-11}$, segunda formulación. Verificación $\neq$ validación.
+\item \textbf{Tabla.} V3: PR llega 22,8 s antes y 6,7 K más frío. En V1 más masa, en V2-V3 menos.
+\item \textbf{V3.} Escalas 2 s y 360 s; pico del ideal; la pared almacena. \emph{Transición:} ``Andrés explica por qué difieren''.
+\item \textbf{Por qué difieren (Andrés).} Menor $h_s$ (311,7 vs 275,4 kJ/kg) y $Z>1$ a 190 bar.
+\item \textbf{Sensibilidad.} $UA_{gw}$: 0 = V2, 8 = base; más intercambio, más frío y más lento; misma tendencia en las tres EOS.
+\item \textbf{Isotermo.} 940 kJ; 40 \% más masa y tiempo; V3 entre los extremos.
+\item \textbf{Suministro.} El signo cambia; a 200 bar/300 K dos efectos de 26 s se cancelan.
+\item \textbf{Span.} 5,68 / 4,90 / 2,83 \%; PR la más cercana, no exacta.
+\item \textbf{Video.} Color = $T_g$ media; anillo = $T_w$; barra = $P/P_{obj}$; por qué se quitó el mapa anterior.
+\item \textbf{Límites.} 0D, conexión ideal, parámetros no medidos, sin experimento.
+\item \textbf{Conclusiones.} Cuatro ideas; cerrar con ``quedamos atentos a sus preguntas''.
+\end{enumerate}
+
+\section{Versión corta (12-15 min)}\label{sec:corto}
+Ocultar las diapositivas 9 (método), 14 (sensibilidad) y 15 (isotermo) y resumirlas en una frase en la 10 y la 12.
+Quedan 17 diapositivas expuestas.
+
+\section{Antes de exponer}
+\begin{itemize}
+\item Abrir el .pptx en el computador de la sala y probar que el video se reproduce.
+\item Llevar el PDF y el MP4 en un pendrive por si falla PowerPoint.
+\item Tener a mano \texttt{Preguntas\_Profesor.pdf}: cada uno estudia las preguntas de su parte y las difíciles (27-37).
+\item Si piden ver el código: \texttt{python main.py --caso V3 --eos pr} imprime un resumen en segundos; \texttt{python -m pytest} corre las 25 pruebas en unos 10 s.
+\end{itemize}
+
+\section{Cifras para memorizar}
+\begin{center}\small
+\begin{tabular}{ll}\toprule
+Cambio de régimen & 105,66 bar ($r^*=0{,}528$)\\
+V2 ideal & 418,92 s · 419,09 K (146 °C)\\
+V3 ideal / VdW / PR & 456,40 / 440,75 / 433,60 s · 385,32 / 379,44 / 378,59 K\\
+Masa V3 ideal / PR & 8,307 / 7,985 kg\\
+$Z$ final V3 VdW / PR & 1,037 / 1,059\\
+$h_s$ ideal / VdW / PR & 311,7 / 273,5 / 275,4 kJ/kg\\
+Calor a la pared V3 ideal / PR & 208,6 / 161,8 kJ\\
+Isotermo: tiempo y calor (ideal) & 586,4 s · 945 kJ\\
+Error densidad vs Span (200 bar, 300 K) & 5,68 / 4,90 / 2,83 \%\\
+Orden RK4 & 4,03\\\bottomrule
+\end{tabular}\end{center}
+\end{document}

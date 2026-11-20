@@ -1,0 +1,302 @@
+\documentclass[11pt]{article}
+\input{estilo}
+\title{\color{tinta}\textbf{Llenado transiente de un depósito con gas real}\\[4pt]
+\large Informe técnico interno · ICF130 Tema 7 · material de estudio del grupo}
+\author{Paul Berdichewsky · Benjamín Arancibia · Andrés Cerón\\ \small UTFSM, Campus Santiago San Joaquín · 2026-2}
+\date{Noviembre 2026}
+\begin{document}
+\maketitle
+\begin{alerta}[Uso de este documento]
+Material privado para estudiar y defender el proyecto. No es la entrega. Todas las cifras salen de la
+ejecución de \texttt{main.py} registrada en \texttt{02\_RESULTADOS/registro\_ejecucion.json}
+(Python 3.13, NumPy 2.3.3, SciPy 1.16.1, CoolProp 7.2.0). Las derivaciones completas también están en
+\texttt{Desarrollo\_Matematico.pdf}; las preguntas de defensa, en \texttt{Preguntas\_Profesor.pdf}.
+\end{alerta}
+\tableofcontents
+\newpage
+
+\section{Introducción}
+\subsection{Problema}
+Un depósito rígido de 50 L con nitrógeno a 1 bar y 300 K se conecta a un suministro a 200 bar y 300 K. El gas
+entra, la presión sube y, aunque el gas que entra está a temperatura ambiente, el contenido se calienta.
+Queremos saber cuánto demora en llegar a una presión objetivo, en qué estado queda (temperatura, masa,
+factor $Z$) y cuánto pesan en eso la ecuación de estado, la restricción del caudal, la pared y el suministro.
+
+\subsection{Importancia física}
+Es el problema de llenar cilindros de gas comprimido: GNC, hidrógeno vehicular, aire de buceo o nitrógeno
+industrial. En la práctica el calentamiento limita la velocidad de carga (los estándares de hidrógeno fijan
+un máximo de 85 °C en el gas) y reduce cuánta masa cabe a una presión dada, porque un gas caliente necesita
+menos masa para alcanzar esa presión.
+
+\subsection{Objetivos}
+\begin{enumerate}
+\item Formular los balances transientes de masa y energía de un volumen de control abierto (exigencia del Tema 7).
+\item Comparar gas ideal, Van der Waals y Peng-Robinson con una energía interna consistente con cada EOS.
+\item Cuantificar el efecto de la restricción del caudal (V2) y del intercambio con una pared (V3).
+\item Estudiar el efecto del estado del suministro $(P_s,T_s)$ (exigencia del Tema 7).
+\item Verificar la implementación contra casos conocidos y estimar el orden de convergencia (exigencias transversales).
+\end{enumerate}
+
+\subsection{Por qué versiones sucesivas}
+Cada versión agrega un solo fenómeno y mantiene todo lo demás igual. Así una diferencia entre versiones
+se puede atribuir a una hipótesis. Dentro de cada versión, las tres EOS usan el mismo suministro, objetivo,
+conexión y $\cvi$, para que la diferencia entre ellas venga del estado del gas.
+
+\section{Sistema, hipótesis y dimensionalidad}
+\begin{table}[h]\centering\small
+\begin{tabular}{lll}\toprule
+Magnitud & Valor & Origen\\\midrule
+Volumen $V$ & 0,050 m$^3$ & condición de estudio\\
+Estado inicial & 1 bar, 300 K (N$_2$ purgado) & condición de estudio\\
+Suministro & 200 bar, 300 K, constante & condición de estudio\\
+Objetivo & V1: 100 bar · V2, V3: 190 bar · malla: 140 bar & elección del grupo\\
+$c_p$, $\cvi$, $\gamma$ & 1039 · 742,197 J/(kg K) · 1,39990 & NIST Shomate a 300 K\\
+$R=R_u/M$ & 296,803 J/(kg K) & CODATA 2022\\
+$T_c$, $P_c$, $\omega$ & 126,192 K · 3,3958 MPa · 0,0372 & Span et al. (2000)\\
+Caudal V1 & 20 g/s & elección\\
+Conexión V2-V3 & $C_d=0{,}8$, $A=5{,}447\cdot10^{-7}$ m$^2$ (20 g/s estrangulado) & calibración\\
+Pared V3 & 8 kg, $c_w=500$ J/(kg K), $C_w=4000$ J/K & Outokumpu 304 (solo $c_w$)\\
+Conductancias & $UA_{gw}=8$ W/K, $UA_{wa}=3$ W/K, $T_\infty=300$ K & parámetros de estudio\\\bottomrule
+\end{tabular}
+\caption{Caso base. Masa de pared, conductancias y $C_dA$ no son medidas: por eso se estudian con sensibilidad.}
+\end{table}
+
+\textbf{Hipótesis.} Depósito rígido; una entrada y ninguna salida; sin trabajo de eje; gas bien mezclado;
+suministro de remanso constante (depósito infinito); energía cinética y potencial almacenadas despreciables;
+N$_2$ puro, monofásico y muy por encima de $T_c$; $\cvi$ constante como fondo ideal de las tres EOS;
+en V3, una sola temperatura de pared.
+
+\subsection{Modelo 0D y visualización}
+Todo el proyecto es un modelo \textbf{0D} (parámetros concentrados): las variables dependen del tiempo pero no
+de la posición. No hay partes 1D ni 2D. La animación pinta cada estanque con un color \emph{uniforme} igual a
+$T_g(t)$ y el anillo con $T_w(t)$: representa exactamente lo que se calcula. La animación del avance usaba un
+mapa con un punto caliente en la entrada; se retiró porque (i) no proviene de ninguna ecuación resuelta y
+(ii) contradice la física: el gas que entra es el más frío (300 K o menos tras la expansión), y el
+calentamiento se debe a la compresión del gas residente. Un campo espacial exigiría resolver Navier-Stokes y
+energía (CFD) o, al menos, un modelo 1D de conducción en la pared, que no forman parte del proyecto.
+La referencia a von Kármán que aparecía en el avance (calle de vórtices tras una esfera) no tenía uso en el
+modelo ni en el código y se eliminó: una calle de vórtices requiere un cuerpo en un flujo cruzado.
+
+\section{Fundamentos y desarrollo matemático}
+\input{desarrollo_cuerpo}
+
+\section{Desarrollo de cada versión}
+\subsection{V1: caudal fijo, adiabático, 100 bar}
+\textbf{Qué se implementó.} $\md=20$ g/s, $\Qgw=0$; EDO \eqref{eq:dTdt} con las tres EOS.
+\textbf{Para qué.} Aislar el efecto de la EOS: el caudal no depende de la presión.
+\textbf{Resultado.} El gas ideal sube casi de inmediato hacia $\gamma T_s\approx420$ K, porque la masa inicial
+(0,056 kg) es despreciable frente a la que entra. Las EOS reales terminan unos 30 K más frías (388-389 K) y
+necesitan más masa (4,23-4,32 kg frente a 4,03 kg) y más tiempo (208-213 s frente a 199 s).
+\textbf{Limitación.} Un caudal fijo hasta 100 bar no es físico si el suministro está a 200 bar con una conexión real.
+
+\subsection{V2: caudal compresible, adiabático, 190 bar}
+\textbf{Qué cambia.} $\md(P)$ según \eqref{eq:caudal}. El flujo es estrangulado hasta 105,66 bar (210 s en gas
+ideal) y luego subsónico; al llegar a 190 bar el caudal cayó a 8,99 g/s en las tres EOS (a igual $P$, igual caudal).
+\textbf{Resultado.} 418,92 s y 419,09 K (ideal); 410,86 s y 403,67 K (VdW); 404,88 s y 402,67 K (PR).
+Ahora las EOS reales llegan \emph{antes} con \emph{menos} masa (sección~\ref{sec:porque}).
+\textbf{Aporte.} El caudal depende del estado del depósito: la masa deja de crecer linealmente.
+
+\subsection{V3: pared con inercia térmica y ambiente, 190 bar}
+\textbf{Qué cambia.} Se agregan $T_w$ y \eqref{eq:pared}. \textbf{Escalas de tiempo:} el gas responde en
+$m_0c_v/(\md c_v+UA_{gw})\approx1{,}8$ s y la pared en $C_w/(UA_{gw}+UA_{wa})\approx364$ s.
+\textbf{Resultado.} 456,40 s / 385,32 K (ideal); 440,75 s / 379,44 K (VdW); 433,60 s / 378,59 K (PR).
+La pared termina en 343,5 K (ideal) y 334,6 K (PR). Respecto de V2 la temperatura final baja 33,8 K (ideal),
+24,2 K (VdW) y 24,1 K (PR) y el llenado se alarga entre 29 y 37 s.
+\textbf{Aporte.} El gas cede 208,6 kJ (ideal) o 161,8 kJ (PR) a la pared, que solo pierde 34,6 / 23,6 kJ al ambiente:
+la pared actúa sobre todo como almacén. En gas ideal $T_g$ tiene un máximo de 385,97 K en 378 s y luego baja
+0,65 K: cuando el caudal cae, el aporte de entalpía ya no compensa la pérdida a la pared.
+
+\section{Implementación numérica}
+\begin{itemize}
+\item \textbf{Integrador:} \texttt{solve\_ivp} (SciPy) con RK45, par embebido de órdenes 5 y 4 con control de error
+local $\le \text{atol}+\text{rtol}|y|$; rtol $=10^{-9}$, atol $=10^{-11}$, paso máximo 0,5 s (resuelve el transiente
+inicial de 1,8 s y la transición de régimen).
+\item \textbf{Evento:} función $P(t)-P_{obj}$ con \texttt{terminal=True} y \texttt{direction=1}: el instante se ubica sobre
+la solución densa (no en la malla de salida). Con malla de 10 s y umbral el error sería de hasta 9,25 s; con el evento es despreciable.
+\item \textbf{Raíces:} los estados definidos por $(P,T)$ (inicial y suministro) se resuelven en densidad con Brent en
+$\rho\in[0,(1-10^{-10})/b)$, donde la función cambia de signo. Se exige $v>b$ y $(\partial P/\partial v)_T<0$ (rama estable);
+como $T>T_c$ la raíz es única. En PR también se exige $c_v>0$ en cada evaluación.
+\item \textbf{Formulación alternativa (PR):} se integra $(m,U,T_w)$ con DOP853 y se recupera $T$ resolviendo $m\,u(T,V/m)=U$.
+Coincide con la formulación en temperatura hasta $1{,}6\cdot10^{-6}$ K y $3\cdot10^{-9}$ s.
+\item \textbf{Orden de convergencia:} RK4 clásico de paso fijo en V3 ideal hasta 180 s (antes de la transición),
+contra DOP853 con rtol $2\cdot10^{-13}$. Si $e(h)\approx Kh^p$, $p=\log_2[e(h)/e(h/2)]$: se obtuvo 4,14 a 4,03.
+\item \textbf{Estabilidad:} el sistema no es rígido en la región estudiada (relación de escalas $\sim$200); los métodos
+explícitos funcionaron. La conclusión vale para estos parámetros.
+\end{itemize}
+
+\subsection{Estructura del código}
+\texttt{main.py} es el único punto de entrada. Módulos:
+\begin{itemize}
+\item \texttt{modelos/base.py}: ideal y VdW, copia sin cambios físicos de la entrega anterior;
+\item \texttt{modelos/peng\_robinson.py}: PR, Span, malla de suministro, isotermo;
+\item \texttt{modelos/sensibilidad\_pr.py} y \texttt{modelos/figuras\_presentacion.py};
+\item \texttt{modelos/animacion.py}: video MP4;
+\item \texttt{pruebas/test\_modelo.py}: 25 pruebas automáticas.
+\end{itemize}
+Ejecución completa: 63 s sin video y 92 s el video, en el entorno de prueba.
+
+\section{Resultados}
+\begin{table}[h]\centering\small
+\begin{tabular}{llrrrrr}\toprule
+Etapa & EOS & $P_{obj}$ [bar] & $t_f$ [s] & $T_f$ [K] & $m_f$ [kg] & $Z_f$\\\midrule
+V1 & Ideal & 100 & 198,56 & 418,30 & 4,027 & 1,0000\\
+ & Van der Waals & 100 & 213,36 & 387,92 & 4,323 & 1,0045\\
+ & Peng-Robinson & 100 & 208,53 & 389,49 & 4,227 & 1,0233\\
+V2 & Ideal & 190 & 418,92 & 419,09 & 7,637 & 1,0000\\
+ & Van der Waals & 190 & 410,86 & 403,67 & 7,595 & 1,0439\\
+ & Peng-Robinson & 190 & 404,88 & 402,67 & 7,471 & 1,0640\\
+V3 & Ideal & 190 & 456,40 & 385,32 & 8,307 & 1,0000\\
+ & Van der Waals & 190 & 440,75 & 379,44 & 8,132 & 1,0374\\
+ & Peng-Robinson & 190 & 433,60 & 378,59 & 7,985 & 1,0587\\\bottomrule
+\end{tabular}
+\caption{Estado al alcanzar la presión objetivo (\texttt{Datos/peng\_robinson/casos\_base.csv}).}
+\end{table}
+
+\begin{figure}[h]\centering
+\includegraphics[width=0.49\linewidth]{f04_V1_T_P.png}\hfill
+\includegraphics[width=0.49\linewidth]{f03_V2_caudal.png}
+\caption{Izquierda: V1, temperatura y presión. Derecha: V2, caudal y cambio de régimen.}
+\end{figure}
+\begin{figure}[h]\centering
+\includegraphics[width=0.49\linewidth]{f01_V3_temperaturas.png}\hfill
+\includegraphics[width=0.49\linewidth]{f02_V3_presion_masa.png}
+\caption{V3: temperaturas de gas y pared (izquierda); presión y masa (derecha).}
+\end{figure}
+
+\textbf{Lectura.} En V1 la presión del gas ideal crece linealmente (solución exacta) y en las EOS reales se curva.
+En V2 la masa crece linealmente mientras el flujo está estrangulado y luego se curva. En V3 la pared retrasa
+el calentamiento: el gas queda en una meseta y la pared sube casi linealmente.
+
+\section{Comparaciones}
+\subsection{Por qué difieren las ecuaciones de estado}\label{sec:porque}
+\begin{enumerate}
+\item \textbf{Entalpía del suministro.} A 200 bar y 300 K, $h_s$ vale 311,7 kJ/kg (ideal), 273,5 (VdW) y 275,4 (PR)
+con la misma referencia $\cvi T$. La atracción entre moléculas da una entalpía residual negativa
+(Span: $-32{,}3$ kJ/kg). Entra menos energía por kilo: las EOS reales terminan más frías.
+\item \textbf{Compresibilidad.} $m=PV/(ZRT)$. A baja presión domina la atracción ($Z<1$ en VdW) y a 190 bar el volumen
+excluido ($Z=1{,}037$ VdW, $1{,}059$ PR). En V1 (100 bar) el efecto de la menor $T$ domina y las EOS reales
+necesitan más masa; en V2-V3 (190 bar) domina $Z$ y necesitan menos, por eso llegan antes.
+\end{enumerate}
+\begin{figure}[h]\centering
+\includegraphics[width=0.49\linewidth]{f06_V3_Z.png}\hfill
+\includegraphics[width=0.49\linewidth]{f05_V2_vs_V3.png}
+\caption{Factor $Z$ en V3 (izquierda) y efecto de la pared: V2 punteado, V3 continuo (derecha).}
+\end{figure}
+
+\subsection{Sensibilidad a la pared (tres EOS, 190 bar)}
+\begin{table}[h]\centering\small
+\begin{tabular}{lrrrrrr}\toprule
+Parámetro & valor & $t_f$ ideal [s] & $t_f$ PR [s] & $T_{max}$ ideal [K] & $T_{max}$ PR [K] & $Q_{gw}$ PR [kJ]\\\midrule
+$UA_{gw}$ [W/K] & 0 & 418,92 & 404,88 & 419,09 & 402,67 & 0\\
+ & 4 & 444,26 & 423,58 & 396,90 & 386,73 & 104,4\\
+ & 8 & 456,40 & 433,60 & 385,97 & 378,59 & 161,8\\
+ & 16 & 466,26 & 442,95 & 376,85 & 371,14 & 217,2\\
+$UA_{wa}$ [W/K] & 1,5 & 455,54 & 433,07 & 386,39 & 378,95 & 159,3\\
+ & 6 & 457,94 & 434,56 & 385,24 & 377,96 & 166,4\\
+$C_w$ [J/K] & 2000 & 449,27 & 428,34 & 391,29 & 382,55 & 133,5\\
+ & 8000 & 462,66 & 437,98 & 382,16 & 375,49 & 184,6\\\bottomrule
+\end{tabular}
+\caption{Un parámetro a la vez desde el caso base (\texttt{Datos/sensibilidad\_3EOS}).}
+\end{table}
+$UA_{gw}$ es el parámetro dominante. $UA_{wa}$ casi no influye en este horizonte (la pared todavía se está calentando:
+el calor queda almacenado). Una pared de mayor $C_w$ se calienta menos, mantiene más diferencia con el gas y extrae más calor.
+Las tres EOS siguen la misma tendencia.
+
+\subsection{Extremos adiabático e isotermo}
+Con un baño ideal a 300 K y el mismo caudal, el llenado a 190 bar tarda 586,4 s (ideal), 581,0 (VdW) y 569,5 (PR),
+cerca de 40\,\% más que el adiabático, entra cerca de 40\,\% más masa y hay que extraer 945,0, 937,3 y 936,2 kJ.
+En gas ideal se comprobó $Q=(m_f-m_0)RT_0$ hasta $10^{-8}$ J. V3 queda entre ambos extremos.
+
+\subsection{Estado del suministro}
+Malla $P_s\in\{150,175,200,225,250\}$ bar $\times$ $T_s\in\{280,\dots,320\}$ K, objetivo común 140 bar, misma $C_dA$.
+El caudal estrangulado crece con $P_s$ y cae como $T_s^{-1/2}$; en las EOS reales $P_s$ y $T_s$ también cambian $h_s$.
+PR $-$ ideal en tiempo va de $-15{,}5$ s (150 bar, 320 K) a $+8{,}4$ s (250 bar, 280 K): \textbf{el signo cambia}.
+En temperatura final PR siempre termina más frío (de $-3{,}7$ a $-21{,}3$ K). Frente a VdW, PR es más rápido y
+guarda menos masa en los 25 pares. A 200 bar y 300 K, cambiar solo el depósito a PR (con $h_s$ ideal) acorta
+26,57 s y cambiar después $h_s$ a PR alarga 25,86 s: el neto $-0{,}72$ s esconde dos efectos grandes.
+La descomposición depende del orden porque caudal, presión y energía están acoplados.
+\begin{figure}[h]\centering
+\includegraphics[width=0.45\linewidth]{f08_malla_tiempo.png}\hfill
+\includegraphics[width=0.45\linewidth]{f10_descomposicion.png}
+\caption{Diferencia PR $-$ ideal en el tiempo hasta 140 bar y descomposición a 200 bar, 300 K.}
+\end{figure}
+
+\subsection{Contraste con la ecuación de referencia de Span}
+Se comparó con HEOS::Nitrogen (CoolProp 7.2.0) a igual $(T,P)$ en 35 estados y en los nueve estados finales.
+A 200 bar y 300 K ($\rho_{ref}=212{,}54$ kg/m$^3$): error de densidad $+5{,}68$\,\% (ideal), $+4{,}90$\,\% (VdW),
+$+2{,}83$\,\% (PR); error de $h$ residual $+32{,}3$, $-5{,}9$ y $-4{,}0$ kJ/kg. Máximos en la malla: densidad 12,7 / 5,5 / 3,7\,\%.
+PR es la más cercana \emph{en este rango}; no es exacta.
+\begin{figure}[h]\centering
+\includegraphics[width=0.8\linewidth]{f11_contraste_span_300K.png}
+\caption{Errores frente a Span a 300 K.}
+\end{figure}
+
+\section{Verificación}
+\begin{itemize}
+\item Solución exacta V1 ideal: error máximo $2{,}56\cdot10^{-6}$ K; $t_f$ con error $2\cdot10^{-12}$ s. V2 ideal: $T(m)$ y $t_f$ por cuadratura, error $2{,}3\cdot10^{-6}$ K.
+\item Límites: $a=b=0$ recupera el ideal en V1-V3 (VdW y PR); V3 con $UA=0$ reproduce V2 (tres EOS).
+\item Balances: residuo energético relativo máximo $8\cdot10^{-12}$ en los casos base y $<10^{-10}$ en los 28 casos PR (3 base y 25 de la malla).
+\item Convergencia: barridos de paso máximo y tolerancia (RK45 y DOP853) contra referencia refinada; RK4 de orden 4,03-4,14.
+\item Propiedades PR en 20 estados: $h=u+Pv$, cuadratura independiente de $u_v$, $c_v$ y $u_v$ por diferencias centradas.
+\item Reproducibilidad: los 74 CSV regenerados coinciden con los guardados por el grupo con diferencias relativas $<10^{-6}$ en las
+magnitudes físicas; solo cambian columnas de error a nivel de redondeo.
+\end{itemize}
+\begin{figure}[h]\centering
+\includegraphics[width=0.45\linewidth]{f12_orden_rk4.png}\hfill
+\includegraphics[width=0.5\linewidth]{f13_balances.png}
+\caption{Orden de RK4 y cierre del balance de energía.}
+\end{figure}
+
+\section{Limitaciones y trabajo futuro}
+\begin{itemize}
+\item \textbf{0D:} no hay estratificación ni chorro; en estanques grandes o llenados rápidos la temperatura local
+puede diferir del promedio. Futuro: modelo 1D de pared o CFD axisimétrico.
+\item \textbf{Conexión:} ley isentrópica de gas ideal para las tres EOS (hipótesis de comparación). A 200 bar un caudal
+con propiedades reales cambiaría unos puntos porcentuales; su efecto debería aislarse en otra comparación.
+\item \textbf{Parámetros:} $UA$, $m_w$ y $C_dA$ no medidos. Se necesitan geometría y mediciones de $P(t)$, $\md(t)$, $T_g$ y $T_w$.
+\item \textbf{Propiedades:} $\cvi$ constante (en 300-420 K el $c_p$ ideal del N$_2$ varía menos de 1\,\%); pared con $c_w$ constante.
+\item \textbf{Suministro y válvula:} suministro infinito y apertura instantánea; sin agotamiento del suministro.
+\item \textbf{Sin validación experimental:} las pruebas confirman que se resuelven bien las ecuaciones, no que el modelo prediga un estanque real.
+\end{itemize}
+
+\section{Conclusiones}
+\begin{enumerate}
+\item (Objetivo 1) El calentamiento sin calor externo se explica por el trabajo de flujo: la corriente aporta $h_s=u_s+P_sv_s$.
+Sin pared y con gas ideal el gas tiende a $\gamma T_s\approx420$ K.
+\item (Objetivo 2) Una EOS real exige una energía interna consistente (Maxwell). Con ella, a 190 bar las EOS reales dan
+llenados más cortos y menos masa por dos mecanismos: menor entalpía de entrada y $Z>1$.
+\item (Objetivo 3) La restricción del caudal domina la duración desde 106 bar; la pared baja la temperatura final 24-34 K
+y alarga el llenado; su capacidad importa más que las pérdidas al ambiente.
+\item (Objetivo 4) Según $(P_s,T_s)$ PR llega antes o después que el ideal; el resultado neto surge de efectos opuestos.
+\item (Objetivo 5) La implementación reproduce soluciones exactas, límites y balances, converge con el orden teórico y,
+frente a Span, PR es la EOS más cercana en el rango estudiado.
+\end{enumerate}
+
+\begin{thebibliography}{9}
+\bibitem{tema7} S. Palma e I. Díaz. \emph{Proyecto computacional: descripción ampliada de los temas}, Tema 7. ICF130, UTFSM, 2026.
+\bibitem{palma} S. Palma. \emph{Fundamentos de Termodinámica Aplicada}, material de clase (clases 11, 13-16). UTFSM, 2026.
+\bibitem{pr} D.-Y. Peng y D. B. Robinson. A new two-constant equation of state. \emph{Ind. Eng. Chem. Fundam.} 15(1):59-64, 1976. doi:10.1021/i160057a011.
+\bibitem{span} R. Span, E. W. Lemmon, R. T. Jacobsen, W. Wagner y A. Yokozeki. A reference equation of state for the thermodynamic properties of nitrogen. \emph{J. Phys. Chem. Ref. Data} 29(6):1361-1433, 2000. doi:10.1063/1.1349047.
+\bibitem{nist} NIST Chemistry WebBook, SRD 69, Nitrogen (datos de fase gaseosa, Shomate). \url{https://webbook.nist.gov/cgi/cbook.cgi?ID=C7727379&Mask=1}. Consulta: 15-11-2026.
+\bibitem{codata} NIST SP 959, CODATA 2022. \url{https://www.physics.nist.gov/cuu/pdf/wallet_2022.pdf}.
+\bibitem{nasa} NASA Glenn Research Center. Mass flow rate equations. \url{https://www.grc.nasa.gov/WWW/k-12/airplane/mchkdrv.html}.
+\bibitem{outo} Outokumpu. Core range datasheet, acero 304/4301. Consulta: 15-11-2026.
+\bibitem{coolprop} I. H. Bell et al. CoolProp 7.2.0. \url{https://coolprop.org}. SciPy 1.16.1, \texttt{solve\_ivp} y \texttt{brentq}.
+\end{thebibliography}
+
+\appendix
+\section{Ejecución y archivos}
+\begin{verbatim}
+cd 01_ENTREGA_PROFESOR/Codigo_Final
+python -m pip install -r requirements.txt
+python main.py                     # todo (~3 min)
+python main.py --caso V3 --eos pr  # un caso, resumen en pantalla
+python -m pytest                   # 25 pruebas
+\end{verbatim}
+Datos en \texttt{02\_RESULTADOS/Datos}, figuras en \texttt{Graficos}, video en \texttt{Animaciones\_MP4}.
+
+\section{Cambios respecto del avance y de la entrega anterior}
+Unificación en un solo \texttt{main.py}; Peng-Robinson completo y contraste con Span; malla Ps-Ts y descomposición;
+límite isotermo; PR en la sensibilidad de pared; animación nueva con tres EOS y color uniforme (se retiró el mapa
+ilustrativo y la referencia a von Kármán); 25 pruebas automáticas. La física de ideal y VdW no cambió.
+\end{document}

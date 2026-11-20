@@ -1,0 +1,163 @@
+% Desarrollo matemático completo. Se incluye en el informe y en el documento aparte.
+
+\subsection{Notación y unidades}
+Todas las magnitudes están en SI. $m$ masa de gas [kg]; $V$ volumen del depósito [m$^3$];
+$v=V/m$ volumen específico [m$^3$/kg]; $T_g$ temperatura del gas [K]; $T_w$ temperatura media de la
+pared [K]; $P$ presión absoluta [Pa]; $u$ y $h$ energía interna y entalpía específicas [J/kg];
+$U=mu$ energía interna del gas [J]; $\md$ caudal que entra [kg/s]; $\Qgw$ potencia térmica del gas a la
+pared y $\Qwa$ de la pared al ambiente [W], ambas positivas en el sentido gas $\to$ pared $\to$ ambiente.
+El subíndice $s$ indica el suministro (remanso) y el $0$ el estado inicial. $R=R_u/M=296{,}803$ J/(kg K).
+
+\subsection{Balance de masa}
+Para un volumen de control con entradas y salidas, $\dd m/\dd t=\sum \md_{\text{ent}}-\sum \md_{\text{sal}}$.
+Hay una sola entrada y ninguna salida:
+\begin{equation}\label{eq:masa}
+\frac{\dd m}{\dd t}=\md .
+\end{equation}
+
+\subsection{Primera ley para el volumen de control}
+La forma general, despreciando la energía cinética y potencial \emph{almacenadas} en el gas, es
+\[
+\frac{\dd U}{\dd t}=\dot Q_{\text{neto}}-\dot W_{\text{eje}}-\dot W_{\text{frontera}}
++\sum \md_{\text{ent}}\Big(h+\tfrac{c^2}{2}+gz\Big)_{\text{ent}}-\sum \md_{\text{sal}}\Big(h+\tfrac{c^2}{2}+gz\Big)_{\text{sal}} .
+\]
+\begin{itemize}
+\item $\dot W_{\text{eje}}=0$: no hay compresor, turbina ni agitador dentro del depósito.
+\item $\dot W_{\text{frontera}}=-P\,\dd V/\dd t=0$: el depósito es rígido.
+\item La corriente se toma en su estado de \emph{remanso} $(P_s,T_s)$: la entalpía de remanso $h_s=h+c^2/2$
+ya incluye la energía cinética del chorro, que se disipa dentro del depósito. $gz$ es despreciable.
+\item $\dot Q_{\text{neto}}=-\Qgw$ (el gas pierde calor hacia la pared en V3; vale cero en V1 y V2).
+\end{itemize}
+Queda
+\begin{equation}\label{eq:energia}
+\frac{\dd (mu)}{\dd t}=\md\,h_s-\Qgw .
+\end{equation}
+
+\begin{idea}[¿Por qué aparece la entalpía y no la energía interna?]
+Para meter un kilo de gas al volumen de control hay que empujarlo contra la presión: el gas que viene
+detrás hace un trabajo $P_s v_s$ por kilo (trabajo de flujo). La energía que cruza la frontera por kilo es
+$u_s+P_sv_s=h_s$. Ese trabajo de flujo es el que calienta el depósito aunque no entre calor:
+en un gas ideal $h_s-u_s=RT_s$, que es la diferencia entre $c_pT_s$ y $c_vT_s$.
+Energía interna = energía almacenada; entalpía = energía transportada por la corriente;
+calor = energía que cruza la frontera por diferencia de temperatura, sin masa.
+\end{idea}
+
+\subsection{Pared y ambiente (V3)}
+La pared se representa con una capacidad térmica $C_w=m_wc_w=8\cdot500=4000$ J/K y una sola temperatura.
+Las transferencias se escriben con conductancias globales $UA$ [W/K]:
+\begin{equation}\label{eq:pared}
+\Qgw=UA_{gw}(T_g-T_w),\qquad \Qwa=UA_{wa}(T_w-T_\infty),\qquad C_w\frac{\dd T_w}{\dd t}=\Qgw-\Qwa .
+\end{equation}
+Sumando \eqref{eq:energia} y \eqref{eq:pared} se cancela $\Qgw$ (transferencia interna):
+$\dd(U_g+U_w)/\dd t=\md h_s-\Qwa$. Esa identidad se usa como prueba del balance global.
+
+\subsection{Relación entre la ecuación de estado y la energía interna}
+De $\dd u=T\dd s-P\dd v$ y de la relación de Maxwell $(\partial s/\partial v)_T=(\partial P/\partial T)_v$:
+\begin{equation}\label{eq:maxwell}
+\dd u=c_v\,\dd T+\Big[T\Big(\frac{\partial P}{\partial T}\Big)_v-P\Big]\dd v ,
+\qquad u_v\equiv\Big(\frac{\partial u}{\partial v}\Big)_T=T\Big(\frac{\partial P}{\partial T}\Big)_v-P .
+\end{equation}
+Consecuencia: si se cambia la ecuación de estado, $u$ cambia. Usar una EOS real con $u=c_vT$ sería
+inconsistente. Se integra $u_v$ a $T$ fija desde el gas diluido ($v\to\infty$, donde $u=\cvi T$) hasta $v$:
+$u(T,v)=\cvi T+\int_\infty^{v}u_v\,\dd v'$.
+
+\paragraph{Gas ideal.} $P=RT/v$, $T(\partial P/\partial T)_v=P$, $u_v=0$: $u=\cvi T$, $h=\cvi T+RT=c_pT$.
+
+\paragraph{Van der Waals.} $P=\dfrac{RT}{v-b}-\dfrac{a}{v^2}$. Entonces $T(\partial P/\partial T)_v=RT/(v-b)$ y
+$u_v=a/v^2$. Integrando, $u=\cvi T-a/v$. Las constantes salen de imponer
+$(\partial P/\partial v)_T=(\partial^2P/\partial v^2)_T=0$ en el punto crítico:
+\[
+a=\frac{27R^2T_c^2}{64P_c}=174{,}28\ \text{Pa m}^6/\text{kg}^2,\qquad b=\frac{RT_c}{8P_c}=1{,}3787\cdot10^{-3}\ \text{m}^3/\text{kg}.
+\]
+En $U=mu=m\cvi T-am^2/V$ aparece el término $-am^2/V$.
+
+\paragraph{Peng-Robinson (base másica).}
+\begin{equation}\label{eq:pr}
+P=\frac{RT}{v-b}-\frac{a(T)}{D},\quad D=v^2+2bv-b^2,\quad
+a(T)=0{,}45724\frac{R^2T_c^2}{P_c}\,g^2,\quad g=1+\kappa\big(1-\sqrt{T/T_c}\big),
+\end{equation}
+con $b=0{,}07780\,RT_c/P_c$ y $\kappa=0{,}37464+1{,}54226\,\omega-0{,}26992\,\omega^2$, $\omega=0{,}0372$.
+Derivadas: $g'=-\kappa/(2\sqrt{TT_c})$, $g''=-g'/(2T)$, $a'=2a_cgg'$, $a''=2a_c(g'^2+gg'')$.
+Como $(\partial P/\partial T)_v=R/(v-b)-a'/D$:
+\[
+u_v=T\frac{R}{v-b}-\frac{Ta'}{D}-\frac{RT}{v-b}+\frac{a}{D}=\frac{a-Ta'}{D}.
+\]
+Con $I(v)=\dfrac{1}{2\sqrt2\,b}\ln\dfrac{v+(1+\sqrt2)b}{v+(1-\sqrt2)b}$ se cumple $I'(v)=-1/D$ e $I\to0$ cuando $v\to\infty$. Por lo tanto
+\begin{equation}\label{eq:upr}
+u=\cvi T+(Ta'-a)\,I(v),\qquad h=u+Pv,\qquad c_v=\Big(\frac{\partial u}{\partial T}\Big)_v=\cvi+Ta''\,I(v).
+\end{equation}
+Comprobación: $\partial u/\partial v=(Ta'-a)(-1/D)=(a-Ta')/D=u_v$. Si $b\to0$, $I\to1/v$ y se recupera la forma de Van der Waals.
+En PR, $c_v$ depende del estado aunque $\cvi$ sea constante.
+
+\subsection{Ecuación diferencial de la temperatura del gas}
+Con $U=m\,u(T_g,v)$ y $v=V/m$, por la regla de la cadena:
+\[
+\frac{\dd U}{\dd t}=u\frac{\dd m}{\dd t}+m\Big(c_v\frac{\dd T_g}{\dd t}+u_v\frac{\dd v}{\dd t}\Big),\qquad
+\frac{\dd v}{\dd t}=-\frac{V}{m^2}\frac{\dd m}{\dd t}=-\frac{v}{m}\,\md .
+\]
+Igualando con \eqref{eq:energia}:
+\begin{equation}\label{eq:dTdt}
+\boxed{\ \frac{\dd T_g}{\dd t}=\frac{\md\,\big[h_s-u+v\,u_v\big]-\Qgw}{m\,c_v}\ }
+\end{equation}
+\begin{itemize}
+\item Gas ideal: $u_v=0$, $u=\cvi T_g$, $h_s=c_pT_s$ $\Rightarrow$ $\dfrac{\dd T_g}{\dd t}=\dfrac{\md(c_pT_s-\cvi T_g)-\Qgw}{m\cvi}$.
+\item Van der Waals: $v\,u_v=a/v$, $u=\cvi T_g-a/v$ $\Rightarrow$ $h_s-u+vu_v=h_s-\cvi T_g+2a/v=h_s-\cvi T_g+2am/V$
+(el término $2am/V$ del avance).
+\item Con $a=b=0$ se recupera exactamente el gas ideal; con $UA_{gw}=UA_{wa}=0$, V3 se reduce a V2.
+\end{itemize}
+Las variables integradas son $(m,T_g,T_w)$. Como $m$ y $T_g$ se conocen en cada paso, $P$ se evalúa
+directamente con la EOS, sin resolver ninguna ecuación implícita durante la integración.
+
+\subsection{Solución exacta de V1 con gas ideal}
+Con $\Qgw=0$ y $u=\cvi T$: $\dd(mT)/\dd m=\gamma T_s$, con $\gamma=c_p/\cvi$, pues
+$\cvi\,\dd(mT)=c_pT_s\,\dd m$. Integrando desde $(m_0,T_0)$:
+\begin{equation}\label{eq:v1}
+T_g(m)=\gamma T_s+\frac{m_0}{m}\big(T_0-\gamma T_s\big),\qquad m=m_0+\md t .
+\end{equation}
+Cuando $m\gg m_0$, $T_g\to\gamma T_s=1{,}39990\cdot300=419{,}97$ K. Además $PV=mRT_g$ da
+$P(t)=P_0+R\gamma T_s\md\,t/V$: la presión crece linealmente. El tiempo exacto para 100 bar es
+$t_f=(P_f-P_0)V/(R\gamma T_s\md)=198{,}559$ s, igual al numérico hasta $2\cdot10^{-12}$ s.
+En V2 la misma $T_g(m)$ sigue valiendo (el caudal solo cambia el reloj) y el tiempo se obtiene con
+$t_f=\int_{P_0}^{P_f}\dd P/\big[(R\gamma T_s/V)\,\md(P)\big]$.
+
+\subsection{Caudal compresible (V2 y V3)}
+Se modela la conexión como una tobera isentrópica de gas ideal entre el remanso $(P_s,T_s)$ y la presión
+del depósito $P$. Con $r=P/P_s$, la temperatura en la sección de salida es $T_e=T_sr^{(\gamma-1)/\gamma}$; la
+energía da $c_e^2/2=c_p(T_s-T_e)$ y la continuidad $\md=C_dA\,\rho_ec_e$ con $\rho_e=P/(RT_e)$. Sustituyendo:
+\begin{equation}\label{eq:caudal}
+\md=C_dA\frac{P_s}{\sqrt{RT_s}}\sqrt{\frac{2\gamma}{\gamma-1}\Big(r^{2/\gamma}-r^{(\gamma+1)/\gamma}\Big)}\quad (r^*<r<1).
+\end{equation}
+Esta expresión tiene un máximo en $r^*=\big(2/(\gamma+1)\big)^{\gamma/(\gamma-1)}=0{,}5283$, donde la velocidad
+es sónica. Para $r\le r^*$ el caudal queda fijo (flujo estrangulado) en
+\[
+\md^*=C_dA\,P_s\sqrt{\frac{\gamma}{RT_s}}\,\Big(\frac{2}{\gamma+1}\Big)^{\frac{\gamma+1}{2(\gamma-1)}} :
+\]
+bajar más la presión del depósito no aumenta el caudal. Las dos ramas empalman con continuidad de valor y
+de pendiente. $C_dA=4{,}358\cdot10^{-7}$ m$^2$ se calibra para $\md^*=20$ g/s en el caso base y no se cambia
+nunca. El cambio de régimen ocurre en $P=r^*P_s=105{,}66$ bar.
+
+\subsection{Factor de compresibilidad y masa a presión fija}
+$Z=Pv/(RT)$. A igual $P$ y $V$: $m=PV/(ZRT)$. Dos modelos que llegan a la misma presión con distinta
+$Z$ y $T$ guardan distinta masa; la comparación depende del producto $ZT$, no solo de $T$.
+
+\subsection{Límite isotermo}
+Si un baño perfecto mantiene $T_g=T_0$, la EOS da $m(P)=V/v(P,T_0)$ y
+$\dd t=\dd m/\md=-\dfrac{V}{v^2(\partial P/\partial v)_T\,\md(P)}\,\dd P$.
+El calor que hay que extraer sale de la primera ley integrada:
+$Q_{\text{ext}}=(m_f-m_0)h_s-\big[U(m_f)-U(m_0)\big]$. En gas ideal con $T_s=T_0$:
+$Q_{\text{ext}}=(m_f-m_0)(c_p-\cvi)T_0=(m_f-m_0)RT_0$, exactamente el trabajo de flujo acumulado.
+
+\subsection{Residuos de los balances}
+Con las tasas reconstruidas de la solución e integradas con cuadratura de Gauss-Legendre (8 nodos por paso):
+\begin{align*}
+R_m&=\Delta m-\!\int\!\md\,\dd t, & R_g&=\Delta U_g-\!\int\!\md h_s\,\dd t+Q_{gw},\\
+R_w&=\Delta U_w-Q_{gw}+Q_{wa}, & R_\Sigma&=\Delta U_g+\Delta U_w-\!\int\!\md h_s\,\dd t+Q_{wa}.
+\end{align*}
+Se normalizan con la masa añadida o con la suma de los módulos de los términos de cada balance.
+Un residuo pequeño prueba que la ecuación se resolvió bien, no que la EOS sea correcta.
+
+\subsection{Diferencias porcentuales}
+Cuando se reporta una diferencia porcentual entre un modelo $X$ y una referencia $Y$ se usa
+$\Delta\%=100\,(X-Y)/Y$. En el contraste con Span la referencia es siempre Span; en la malla de suministro, el
+modelo de referencia del par (ideal o Van der Waals). Las energías residuales se comparan en kJ/kg y no en
+porcentaje porque cerca de cero el porcentaje no es informativo.

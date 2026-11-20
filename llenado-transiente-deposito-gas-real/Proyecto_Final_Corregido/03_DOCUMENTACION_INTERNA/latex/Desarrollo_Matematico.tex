@@ -1,0 +1,28 @@
+\documentclass[11pt]{article}
+\input{estilo}
+\title{\color{tinta}\textbf{Desarrollo matemático completo}\\[4pt]\large Llenado transiente de un depósito con gas real · ICF130 Tema 7}
+\author{Material interno del grupo}
+\date{Noviembre 2026}
+\begin{document}
+\maketitle
+Este documento reúne, paso a paso, todas las deducciones que usa el código. Está pensado para poder
+reconstruir cualquier ecuación en la pizarra si el profesor lo pide. Las ecuaciones coinciden con
+\texttt{modelos/base.py} y \texttt{modelos/peng\_robinson.py}.
+\section{Deducciones}
+\input{desarrollo_cuerpo}
+\section{Dónde está cada ecuación en el código}
+\begin{center}\small
+\begin{tabular}{ll}\toprule
+Ecuación & Función\\\midrule
+\eqref{eq:masa}, \eqref{eq:energia}, \eqref{eq:dTdt} (ideal, VdW) & \texttt{base.simular}\\
+\eqref{eq:dTdt} (PR) & \texttt{peng\_robinson.simular\_pr} (\texttt{rhs})\\
+Pared \eqref{eq:pared} & \texttt{rhs} en ambos módulos\\
+EOS y $u$ (VdW) & \texttt{base.presion\_eos}, \texttt{base.energia\_gas}, \texttt{base.entalpia\_entrada}\\
+EOS, $u$, $h$, $c_v$, $u_v$, $P_v$ (PR) & \texttt{peng\_robinson.propiedades}\\
+Raíces en densidad & \texttt{base.volumen\_vdw}, \texttt{peng\_robinson.volumen\_pr}\\
+Caudal \eqref{eq:caudal} & \texttt{base.caudal}\\
+Solución exacta \eqref{eq:v1} & \texttt{base.validar\_ideal}\\
+Límite isotermo & \texttt{peng\_robinson.comparacion\_isoterma}\\
+Residuos & \texttt{base.validacion\_balances}, \texttt{peng\_robinson.balances}\\\bottomrule
+\end{tabular}\end{center}
+\end{document}

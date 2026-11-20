@@ -1,0 +1,12 @@
+Prueba en entorno limpio (venv nuevo, pip install -r requirements.txt, copia del código sin resultados)
+
+25 passed in 8.42s
+pytest exit 0
+Listo en 61.3 s. Resultados en /home/claude/limpio/salida
+main exit 0 73s
+
+base: archivos comparados: 54 peor: (0, None) no generados en original: []
+peng_robinson: archivos comparados: 20 peor: (0, None) no generados en original: []
+sensibilidad_3EOS: archivos comparados: 1 peor: (0, None) no generados en original: []
+
+Resultado: los CSV son idénticos a los de 02_RESULTADOS (diferencia 0).

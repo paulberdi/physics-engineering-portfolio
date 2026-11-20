@@ -1,0 +1,17 @@
+Comparación de los CSV de esta entrega con los guardados por el grupo en OneDrive
+Criterio: diferencia relativa máxima por archivo; se listan solo los que superan 1e-6.
+
+## Datos/base vs ICF130_ENTREGA_FINAL/datos
+balances.csv: max dif relativa 5.64e-04
+convergencia.csv: max dif relativa 1.32e+00
+orden_RK4_paso_fijo_V3.csv: max dif relativa 7.28e-04
+residuos_V2_vdw.csv: max dif relativa 9.39e-04
+residuos_V3_ideal.csv: max dif relativa 5.99e-04
+residuos_V3_vdw.csv: max dif relativa 7.27e-04
+archivos comparados: 54 peor: (1.3179926816775998, 'convergencia.csv') no generados en original: []
+
+## Datos/peng_robinson vs ICF130_AMPLIACION/datos
+validacion_balances_PR.csv: max dif relativa 2.67e-03
+archivos comparados: 20 peor: (0.002665669913669881, 'validacion_balances_PR.csv') no generados en original: []
+
+Las diferencias listadas están solo en columnas de error numérico o residuos (del orden de 1e-11 a 1e-6 en valor absoluto), que dependen del procesador y de la librería matemática. Las magnitudes físicas coinciden.

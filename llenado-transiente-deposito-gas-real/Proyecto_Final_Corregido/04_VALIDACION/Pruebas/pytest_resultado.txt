@@ -1,0 +1,34 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.18, pytest-8.4.2, pluggy-1.7.0 -- /home/claude/venv/bin/python
+rootdir: 01_ENTREGA_PROFESOR/Codigo_Final
+configfile: pytest.ini
+testpaths: pruebas
+collecting ... collected 25 items
+
+pruebas/test_modelo.py::test_configuracion_coincide PASSED               [  4%]
+pruebas/test_modelo.py::test_v1_ideal_coincide_con_solucion_analitica PASSED [  8%]
+pruebas/test_modelo.py::test_caudal_continuo_en_la_razon_critica PASSED  [ 12%]
+pruebas/test_modelo.py::test_vdw_con_a_b_nulos_es_ideal[V1] PASSED       [ 16%]
+pruebas/test_modelo.py::test_vdw_con_a_b_nulos_es_ideal[V2] PASSED       [ 20%]
+pruebas/test_modelo.py::test_vdw_con_a_b_nulos_es_ideal[V3] PASSED       [ 24%]
+pruebas/test_modelo.py::test_v3_sin_conductancias_es_v2[Ideal] PASSED    [ 28%]
+pruebas/test_modelo.py::test_v3_sin_conductancias_es_v2[Van der Waals] PASSED [ 32%]
+pruebas/test_modelo.py::test_v3_sin_conductancias_es_v2[Peng\u2013Robinson] PASSED [ 36%]
+pruebas/test_modelo.py::test_pr_propiedades_y_limite_ideal PASSED        [ 40%]
+pruebas/test_modelo.py::test_raices_en_rama_estable PASSED               [ 44%]
+pruebas/test_modelo.py::test_dominio_invalido_se_informa PASSED          [ 48%]
+pruebas/test_modelo.py::test_balances_cierran_v3[Ideal] PASSED           [ 52%]
+pruebas/test_modelo.py::test_balances_cierran_v3[Van der Waals] PASSED   [ 56%]
+pruebas/test_modelo.py::test_balances_cierran_pr_v3 PASSED               [ 60%]
+pruebas/test_modelo.py::test_formulacion_conservativa_pr PASSED          [ 64%]
+pruebas/test_modelo.py::test_cifras_de_la_presentacion[V1-Ideal-198.56-418.3-4.027] PASSED [ 68%]
+pruebas/test_modelo.py::test_cifras_de_la_presentacion[V1-Van der Waals-213.36-387.92-4.323] PASSED [ 72%]
+pruebas/test_modelo.py::test_cifras_de_la_presentacion[V1-Peng\u2013Robinson-208.53-389.49-4.227] PASSED [ 76%]
+pruebas/test_modelo.py::test_cifras_de_la_presentacion[V2-Ideal-418.92-419.09-7.637] PASSED [ 80%]
+pruebas/test_modelo.py::test_cifras_de_la_presentacion[V2-Van der Waals-410.86-403.67-7.595] PASSED [ 84%]
+pruebas/test_modelo.py::test_cifras_de_la_presentacion[V2-Peng\u2013Robinson-404.88-402.67-7.471] PASSED [ 88%]
+pruebas/test_modelo.py::test_cifras_de_la_presentacion[V3-Ideal-456.4-385.32-8.307] PASSED [ 92%]
+pruebas/test_modelo.py::test_cifras_de_la_presentacion[V3-Van der Waals-440.75-379.44-8.132] PASSED [ 96%]
+pruebas/test_modelo.py::test_cifras_de_la_presentacion[V3-Peng\u2013Robinson-433.6-378.59-7.985] PASSED [100%]
+
+============================== 25 passed in 7.26s ==============================
